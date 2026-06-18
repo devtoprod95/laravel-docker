@@ -16,6 +16,7 @@ services:
     build: ./docker
     container_name: php83
     restart: always
+    user: "1000:1000"
     expose:
       - "${PHP_PORT:-9000}"
     environment:

@@ -33,7 +33,14 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY docker-entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
+RUN passwd -d root
 WORKDIR /var/www/html
+
+RUN echo "umask 000" >> /root/.bashrc
+
+RUN usermod -u 1000 www-data && \
+    groupmod -g 1000 www-data && \
+    chown -R www-data:www-data /var/www/html
 
 EXPOSE 9000
 ENTRYPOINT ["entrypoint.sh"]

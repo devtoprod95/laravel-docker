@@ -24,3 +24,18 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error("Flatpickr가 로드되지 않았습니다.");
     }
 });
+
+window.salert = async function(titleText, icon = 'warning', text = '이 작업은 되돌릴 수 없습니다!') {
+    const result = await Swal.fire({
+        title: titleText,
+        // text: text,
+        icon: icon,
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: '확인',
+        cancelButtonText: '취소'
+    });
+
+    return result.isConfirmed;
+};
