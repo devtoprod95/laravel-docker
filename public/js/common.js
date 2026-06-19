@@ -29,12 +29,15 @@ window.salert = async function(options = {}) {
     const result = await Swal.fire({
         title: options.title || '',
         text: options.text || '',
+        html: options.html || null, // HTML 속성 추가
         icon: options.icon || 'warning',
         showCancelButton: options.cancel !== false,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
         confirmButtonText: '확인',
-        cancelButtonText: '취소'
+        cancelButtonText: '취소',
+        timer: options.timer || 0, // 후에 자동으로 닫힘
+        timerProgressBar: options.timer || false // 진행률 바를 보여주어 남은 시간을 시각화
     });
 
     return result.isConfirmed;

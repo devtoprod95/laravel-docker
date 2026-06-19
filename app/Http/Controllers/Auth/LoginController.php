@@ -22,7 +22,7 @@ class LoginController extends Controller
     }
 
     public function show() {
-        $redirectTo         = $this->request->input('redirect_to');
+        $redirectTo         = $this->request->input('redirectTo');
         $rememberedUsername = Cookie::get('remember_username');
         $rememberedPassword = Cookie::get('remember_password');
 
@@ -77,7 +77,8 @@ class LoginController extends Controller
         Auth::guard('admin')->login($admin);
         $request->session()->regenerate();
 
-        return redirect($request->input('redirectTo', '/'));
+        $redirectTo = $request->input('redirectTo') ?: '/';
+        return redirect($redirectTo);
     }
 
     // 로그아웃

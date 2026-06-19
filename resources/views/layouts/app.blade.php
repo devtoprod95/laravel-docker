@@ -27,27 +27,41 @@
                         <span class="fw-bold">MyApp</span>
                     </a>
 
-                    <div class="navbar-nav flex-row order-md-last">
-                        <div class="nav-item dropdown">
-                            <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown">
-                                <span class="avatar avatar-sm">{{ mb_substr(auth('admin')->user()->name, 0, 1) }}</span>
-                                <div class="d-none d-xl-block ps-2">
-                                    <div>{{ auth('admin')->user()->name }}</div>
-                                    <div class="mt-1 small text-muted">
-                                        @foreach(auth('admin')->user()->roles as $role)
-                                            {{ $role->name->label() }}
-                                            @if(!$loop->last) |
-                                            @endif
-                                        @endforeach
+                    @if( !empty(auth('admin')->user()) )
+                        <div class="navbar-nav flex-row order-md-last">
+                            <div class="nav-item dropdown">
+                                <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown">
+                                    <span class="avatar avatar-sm">{{ mb_substr(auth('admin')->user()->name, 0, 1) }}</span>
+                                    <div class="d-none d-xl-block ps-2">
+                                        <div>{{ auth('admin')->user()->name }}</div>
+                                        <div class="mt-1 small text-muted">
+                                            @foreach(auth('admin')->user()->roles as $role)
+                                                {{ $role->name->label() }}
+                                                @if(!$loop->last) |
+                                                @endif
+                                            @endforeach
+                                        </div>
                                     </div>
+                                </a>
+                               <div class="dropdown-menu dropdown-menu-end">
+                                    <a href="/profile" class="dropdown-item">
+                                        <i class="ti ti-user me-2 fs-2"></i>프로필
+                                    </a>
+                                    <button type="button" class="dropdown-item text-danger btn-logout">
+                                        <i class="ti ti-logout me-2 fs-2"></i>로그아웃
+                                    </button>
                                 </div>
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-end">
-                                <a href="/profile" class="dropdown-item">프로필</a>
-                                <button type="button" class="dropdown-item text-danger btn-logout">로그아웃</button>
                             </div>
                         </div>
-                    </div>
+                    @else
+                        <div class="navbar-nav flex-row order-md-last">
+                            <div class="nav-item">
+                                <a href="{{ route('login') }}" class="btn btn-primary">
+                                    로그인
+                                </a>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </header>
 
@@ -57,44 +71,7 @@
                         <div class="container-xl">
                             <div class="row flex-column flex-md-row flex-fill align-items-center">
                                 <div class="col">
-                                    <ul class="navbar-nav">
-                                        <x-nav-item href="/" :active="request()->is('/')">
-                                            <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-home fs-2"></i></span>
-                                            <span class="nav-link-title">홈</span>
-                                        </x-nav-item>
-
-                                        <x-nav-item href="/users" :active="request()->is('users*')">
-                                            <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-users fs-2"></i></span>
-                                            <span class="nav-link-title">유저</span>
-                                        </x-nav-item>
-
-                                        <li class="nav-item dropdown {{ request()->is('settings*') ? 'active' : '' }}">
-                                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside" role="button">
-                                                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-settings fs-2"></i></span>
-                                                <span class="nav-link-title">설정</span>
-                                            </a>
-                                            <div class="dropdown-menu">
-                                                <a href="/settings/general" class="dropdown-item">
-                                                    <i class="ti ti-adjustments me-2 fs-2 fs-2"></i>일반
-                                                </a>
-                                                <a href="/settings/security" class="dropdown-item">
-                                                    <i class="ti ti-lock me-2 fs-2"></i>보안
-                                                </a>
-
-                                                <div class="dropend">
-                                                    <a href="#" class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown">
-                                                        <i class="ti ti-bell me-2 fs-2"></i>알림
-                                                    </a>
-                                                    <div class="dropdown-menu">
-                                                        <a href="#" class="dropdown-item">이메일 알림</a>
-                                                        <a href="#" class="dropdown-item">SMS 알림</a>
-                                                        <a href="#" class="dropdown-item">푸시 알림</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </li>
-
-                                    </ul>
+                                    <x-menu></x-menu>
                                 </div>
                             </div>
                         </div>
@@ -109,7 +86,7 @@
                     <h2 class="page-title">@yield('title')</h2>
                 </div>
             </div>
-            <div class="page-body">
+            <div class="page-body mt-0">
                 <div class="container-xl">
                     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
                     <script src="{{ asset('js/tabler.min.js') }}?v={{ filemtime(public_path('js/tabler.min.js')) }}"></script>
