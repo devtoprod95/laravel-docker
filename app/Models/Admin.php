@@ -10,6 +10,7 @@ class Admin extends Authenticatable
     protected $table    = 'admins';
     protected $fillable = [];
     protected $hidden   = [];
+    protected $guarded  = [];
 
     /**
      * 관리자 - 역할 다대다 관계 정의

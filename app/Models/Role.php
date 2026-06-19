@@ -10,6 +10,7 @@ class Role extends Model
     protected $table    = 'roles';
     protected $fillable = [];
     protected $hidden   = [];
+    protected $guarded  = [];
 
     protected function casts(): array
     {

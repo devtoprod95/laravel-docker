@@ -10,6 +10,7 @@ class DeniedRoute extends Model
     protected $table    = 'denied_routes';
     protected $fillable = [];
     protected $hidden   = [];
+    protected $guarded  = [];
 
     public function roles(): BelongsToMany
     {

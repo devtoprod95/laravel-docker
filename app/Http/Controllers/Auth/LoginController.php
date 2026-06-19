@@ -77,6 +77,11 @@ class LoginController extends Controller
         Auth::guard('admin')->login($admin);
         $request->session()->regenerate();
 
+        $admin->update([
+            'last_login_at' => now(),            // 현재 시간
+            'last_login_ip' => $request->ip(),   // 요청한 IP 주소
+        ]);
+
         $redirectTo = $request->input('redirectTo') ?: '/';
         return redirect($redirectTo);
     }

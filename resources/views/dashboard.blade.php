@@ -3,7 +3,7 @@
 @section('title', '대시보드')
 
 @section('content')
-<div class="row row-cards">
+<div class="row row-cards mt-2">
 
     {{-- 1. 카드 크기 고정 및 텍스트 래핑 방지 --}}
     <div class="col-sm-6 col-lg-3">

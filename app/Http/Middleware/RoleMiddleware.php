@@ -11,16 +11,15 @@ class RoleMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         if (auth('admin')->check()) {
-            $admin = auth('admin')->user();
-
-            // 2. 현재 요청된 라우트의 이름 가져오기 (예: 'admin.dashboard')
+            /** @var \App\Models\Admin $admin */
+            $admin            = auth('admin')->user();
             $currentRouteName = $request->route()->getName();
 
-            // 3. 관리자의 모든 역할과 그 역할이 차단한 라우트들을 가져와서 목록 생성
-            // flatMap을 사용해 모든 역할의 deniedRoutes를 하나로 합침
-            $deniedRoutes = $admin->roles->flatMap->deniedRoutes->pluck('route_name');
+            // roles와 deniedRoutes를 한 번에 eager load → 쿼리 2개 (roles 1 + deniedRoutes 1)
+            $admin->loadMissing('roles.deniedRoutes');
 
-            // 4. 현재 라우트 이름이 차단 목록에 포함되어 있는지 확인
+            $deniedRoutes = $admin->roles->flatMap->deniedRoutes->pluck('route');
+
             if ($deniedRoutes->contains($currentRouteName)) {
                 abort(403, '이 페이지에 접근할 권한이 없습니다.');
             }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\ManageController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('role')->group(function () {
@@ -12,9 +13,7 @@ Route::middleware('role')->group(function () {
         })->name('dashboard');
 
         Route::prefix('manage')->name('manage.')->group(function () {
-            Route::get('/', function () {
-                return view('users');
-            })->name('list');
+            Route::get('/', [ManageController::class, 'list'])->name('list');
         });
 
         Route::prefix('settings')->name('settings.')->group(function () {

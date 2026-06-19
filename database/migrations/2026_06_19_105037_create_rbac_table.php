@@ -12,14 +12,15 @@ return new class extends Migration
         Schema::create('roles', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50)->unique()->comment('역할명 (예: admin, editor)');
-            $table->string('display_name', 50)->comment('역할 화면 표시용 이름');
+            $table->string('display_name', 50)->nullable(false)->comment('역할 화면 표시용 이름');
             $table->timestamps();
         });
 
         // 2. 접근 불가 라우트(denied_routes) 테이블
         Schema::create('denied_routes', function (Blueprint $table) {
             $table->id();
-            $table->string('route_name', 100)->unique()->comment('접근 불가 라우트명 (예: admin.users.delete)');
+            $table->string('route', 100)->unique()->comment('접근 불가 라우트명 (예: admin.users.delete)');
+            $table->string('route_name', 100)->nullable(false)->comment('접근 불가 라우트 한글명 (예: 설정>일반)');
             $table->timestamps();
         });
 

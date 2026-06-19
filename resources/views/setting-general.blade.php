@@ -3,7 +3,7 @@
 @section('title', '종합 설정')
 
 @section('content')
-<div class="row row-cards justify-content-center">
+<div class="row row-cards justify-content-center mt-2">
     <div class="col-lg-12">
         <form action="#" method="POST" class="card">
             @csrf
