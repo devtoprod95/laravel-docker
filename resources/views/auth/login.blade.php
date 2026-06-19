@@ -19,14 +19,17 @@
 
         <form action="{{ route('login') }}" method="post" autocomplete="on">
             @csrf
+
+            <input type="hidden" name="redirectTo" value="{{ $redirectTo ?? '' }}" class="form-control form-control-lg">
+
             <div class="mb-3">
                 <label class="form-label fw-medium">아아디</label>
-                <input type="text" name="username" value="{{ old('username') }}" class="form-control form-control-lg" placeholder="아이디를 입력해주세요." required>
+                <input type="text" name="username" value="{{ old('username', $username ?? '') }}" class="form-control form-control-lg" placeholder="아이디를 입력해주세요." required>
             </div>
             <div class="mb-3">
                 <label class="form-label fw-medium">비밀번호</label>
                 <div class="input-group input-group-flat">
-                    <input type="password" name="password" id="password" value="{{ old('password') }}" class="form-control form-control-lg" placeholder="비밀번호를 입력해주세요." required>
+                    <input type="password" name="password" id="password" value="{{ old('password', $password ?? '') }}" class="form-control form-control-lg" placeholder="비밀번호를 입력해주세요." required>
                     <span class="input-group-text">
                         <a href="#" id="toggle_password" class="link-secondary" title="비밀번호 보기" data-bs-toggle="tooltip">
                             <svg id="eye_icon" xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -41,8 +44,8 @@
 
             <div class="mb-4">
                 <label class="form-check">
-                    <input type="checkbox" name="remember" class="form-check-input">
-                    <span class="form-check-label text-muted">로그인 유지</span>
+                    <input type="checkbox" name="remember" class="form-check-input" {{ isset($isChecked) && $isChecked ? 'checked' : '' }} />
+                    <span class="form-check-label text-muted">아이디, 비밀번호 자동저장</span>
                 </label>
             </div>
 
@@ -53,7 +56,7 @@
     </div>
 </div>
 <div class="text-center text-muted mt-3">
-    계정이 없으신가요? <a href="#" tabindex="-1">회원가입 요청</a>
+    계정이 없으신가요? <a href="#" tabindex="-1" class="btn-regist">회원가입 요청</a>
 </div>
 
 <script>
@@ -75,6 +78,12 @@
             $('#path_show, #path_show_outer').toggle(isPassword);
             $('#path_hide').toggle(!isPassword);
         });
+
+        $('.btn-regist').click(function(e) {
+            e.preventDefault();
+
+            salert({text: '준비중입니다.', cancel: false});
+        })
     });
 </script>
 

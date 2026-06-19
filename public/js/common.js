@@ -25,12 +25,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-window.salert = async function(titleText, icon = 'warning', text = '이 작업은 되돌릴 수 없습니다!') {
+window.salert = async function(options = {}) {
     const result = await Swal.fire({
-        title: titleText,
-        // text: text,
-        icon: icon,
-        showCancelButton: true,
+        title: options.title || '',
+        text: options.text || '',
+        icon: options.icon || 'warning',
+        showCancelButton: options.cancel !== false,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
         confirmButtonText: '확인',

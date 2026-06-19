@@ -143,7 +143,7 @@
                             $('.btn-logout').on('click', async function(e){
                                 e.preventDefault();
 
-                                if(await salert('정말 로그아웃 하겠습니까?')){
+                                if(await salert({text: '정말 로그아웃 하겠습니까?'})){
                                     $.ajax({
                                         url: '/logout',
                                         type: 'POST',

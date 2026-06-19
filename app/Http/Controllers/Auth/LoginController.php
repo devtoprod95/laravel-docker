@@ -3,23 +3,42 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\Member;
+use App\Models\Admin;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 
 class LoginController extends Controller
 {
+    public Request $request;
+
+    public function __construct(Request $request)
+    {
+        $this->request = $request;
+    }
+
     public function show() {
-        return view('auth.login');
+        $redirectTo         = $this->request->input('redirect_to');
+        $rememberedUsername = Cookie::get('remember_username');
+        $rememberedPassword = Cookie::get('remember_password');
+
+        $params = [
+            'redirectTo' => $redirectTo,
+            'username'   => $rememberedUsername,
+            'password'   => $rememberedPassword,
+            'isChecked'  => !empty($rememberedUsername)
+        ];
+        return view('auth.login', $params);
     }
 
     // 로그인 로직 처리
     public function login(Request $request)
     {
-        $credentials = $request->validate([
+        $validator = Validator::make($request->all(), [
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
         ], [
@@ -27,25 +46,38 @@ class LoginController extends Controller
             'password.required' => '비밀번호를 입력해주세요.',
         ]);
 
-        $member = Member::where('username', $request->username)->first();
-        if (!$member) {
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $admin = Admin::where('username', $request->username)->first();
+        if (!$admin) {
             return back()->withErrors([
                 'username' => '존재하지 않는 아이디입니다.',
             ])->withInput();
         }
 
         // 2. 비밀번호 검증 (Hash::check 사용)
-        if (!Hash::check($request->password, $member->password)) {
+        if (!Hash::check($request->password, $admin->password)) {
             return back()->withErrors([
                 'password' => '비밀번호가 일치하지 않습니다.',
             ])->withInput();
         }
 
-        Auth::guard('admin')->login($member);
+        if ($request->has('remember')) {
+            // 체크함: 쿠키 생성 (10년)
+            Cookie::queue('remember_username', $request->username, 5256000);
+            Cookie::queue('remember_password', $request->password, 5256000);
+        } else {
+            // 체크 안 함: 쿠키 삭제
+            Cookie::queue(Cookie::forget('remember_username'));
+            Cookie::queue(Cookie::forget('remember_password'));
+        }
+
+        Auth::guard('admin')->login($admin);
         $request->session()->regenerate();
 
-        // 사용자가 가려던 페이지가 있었다면 그곳으로 보내고, 없다면 기본값으로
-        return redirect()->intended('/');
+        return redirect($request->input('redirectTo', '/'));
     }
 
     // 로그아웃
@@ -59,8 +91,5 @@ class LoginController extends Controller
         } catch (\Throwable $th) {
             return apiRes(Response::HTTP_BAD_GATEWAY, helpersFailMessage($th->getMessage()));
         }
-
-
-
     }
 }

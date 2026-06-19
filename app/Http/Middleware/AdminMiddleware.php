@@ -15,7 +15,7 @@ class AdminMiddleware
         $currentRouteName = request()->route()->getName();
         if ($guard === 'login') {
             if( !in_array($currentRouteName, $passRoutes) && !Auth::guard('admin')->check() ){
-                return redirect()->route('login');
+                return redirect()->route('login', ['redirect_to' => $request->fullUrl()]);
             }
         }
 
