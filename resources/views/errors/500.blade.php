@@ -7,12 +7,12 @@
             <div class="empty-header">500</div>
             <p class="empty-title">서버 오류가 발생했습니다.</p>
             <p class="empty-subtitle text-muted">
-                죄송합니다. 서버에서 오류가 발생했습니다. 잠시 후 다시 시도해주세요.
+                {{ $exception->getMessage() ?: '죄송합니다. 서버에서 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' }}
             </p>
             <div class="empty-action">
-                <a href="{{ url('/') }}" class="btn btn-primary">
-                    <i class="ti ti-arrow-left"></i>
-                    홈으로 돌아가기
+                <a href="{{ url('/') }}" class="btn btn-primary d-inline-flex align-items-center gap-2">
+                    <i class="ti ti-home"></i>
+                    <span>홈으로 돌아가기</span>
                 </a>
             </div>
         </div>
