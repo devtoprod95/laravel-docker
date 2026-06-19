@@ -30,10 +30,16 @@
                     <div class="navbar-nav flex-row order-md-last">
                         <div class="nav-item dropdown">
                             <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown">
-                                <span class="avatar avatar-sm">홍</span>
+                                <span class="avatar avatar-sm">{{ mb_substr(auth('admin')->user()->name, 0, 1) }}</span>
                                 <div class="d-none d-xl-block ps-2">
-                                    <div>홍길동</div>
-                                    <div class="mt-1 small text-muted">관리자</div>
+                                    <div>{{ auth('admin')->user()->name }}</div>
+                                    <div class="mt-1 small text-muted">
+                                        @foreach(auth('admin')->user()->roles as $role)
+                                            {{ $role->name->label() }}
+                                            @if(!$loop->last) |
+                                            @endif
+                                        @endforeach
+                                    </div>
                                 </div>
                             </a>
                             <div class="dropdown-menu dropdown-menu-end">
