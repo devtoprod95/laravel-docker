@@ -18,6 +18,17 @@ Laravel 13 기반의 **관리자 전용 페이지 데모 프로젝트**입니다
 
 ---
 
+## 샘플 화면
+<img width="1664" height="934" alt="스크린샷 2026-06-19 151005" src="https://github.com/user-attachments/assets/f9a68fb7-4ea0-4d3e-a1d6-91358f4c66b5" />
+<img width="1744" height="894" alt="스크린샷 2026-06-19 152211" src="https://github.com/user-attachments/assets/ea19a0ed-742b-4215-b0bf-ab42b517510a" />
+<img width="1702" height="965" alt="스크린샷 2026-06-19 152200" src="https://github.com/user-attachments/assets/f7166706-861b-40da-9e3f-ab303bdbe287" />
+<img width="1654" height="918" alt="스크린샷 2026-06-19 152145" src="https://github.com/user-attachments/assets/85db48ae-76cb-4e1b-ab50-89dd2b165f5e" />
+<img width="1691" height="884" alt="스크린샷 2026-06-19 152223" src="https://github.com/user-attachments/assets/8eb14125-7c02-4a27-ac1c-c61f702fba0d" />
+
+
+
+---
+
 ## 기술 스택
 
 | 영역 | 사용 기술 |
@@ -339,5 +350,3 @@ docker compose down
 ## 라이선스
 
 내부/데모 목적의 보일러플레이트 프로젝트입니다. (라이선스 정책에 맞게 본 섹션을 수정하세요)
-
-## 샘플 화면
