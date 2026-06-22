@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', '사용자 관리')
+@section('title', '관리자')
 
 @section('content')
 <div class="row row-cards mt-2">
@@ -129,8 +129,8 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header justify-content-between">
-                <h3 class="card-title">사용자 목록</h3>
-                <a href="#" class="btn btn-success"><i class="ti ti-plus me-1"></i> 관리자 생성</a>
+                <h3 class="card-title">관리자 목록</h3>
+                <a href="{{ route('manage.view') }}" class="btn btn-success"><i class="ti ti-plus me-1"></i> 관리자 생성</a>
             </div>
 
             <div id="example-table"></div>
@@ -145,41 +145,6 @@
         const apiUrl = "{{ route('manage.list') }}";
 
         function initTable(params = {}) {
-            var headerMenu = function() {
-                var menu = [];
-                // 1. 전체 컬럼 중 headerMenu 설정이 있는 컬럼만 필터링
-                var columns = this.getColumns().filter(col => col.getDefinition().headerMenu !== undefined);
-
-                for (let column of columns) {
-                    // Tabler 아이콘 (ti-checkbox, ti-square)
-                    const iconCheck = '<i class="ti ti-checkbox"></i>';
-                    const iconUncheck = '<i class="ti ti-square"></i>';
-
-                    let label = document.createElement("span");
-                    label.classList.add("d-flex", "align-items-center", "gap-2");
-
-                    label.innerHTML = (column.isVisible() ? iconCheck : iconUncheck) +
-                                    `<span> ${column.getDefinition().title}</span>`;
-
-                    menu.push({
-                        label: label,
-                        action: function(e) {
-                            e.stopPropagation();
-                            column.toggle();
-
-                            let icon = label.querySelector("i");
-                            if (column.isVisible()) {
-                                icon.className = "ti ti-checkbox";
-                            } else {
-                                icon.className = "ti ti-square";
-                            }
-                        }
-                    });
-                }
-
-                return menu;
-            };
-
             table = new Tabulator("#example-table", {
                 ajaxURL: apiUrl,
                 initialSort:[
@@ -202,13 +167,13 @@
                             return totalRows - rowIndex + 1;
                         }
                     },
-                    { title: "아이디", field: "username", headerSort: true, headerMenu: headerMenu },
-                    { title: "이름", field: "name", headerSort: true, headerMenu: headerMenu },
+                    { title: "아이디", field: "username", headerSort: true, headerMenu: window.tabulatorHeaderMenu },
+                    { title: "이름", field: "name", headerSort: true, headerMenu: window.tabulatorHeaderMenu },
                     {
                         title: "권한",
                         field: "roles",
                         headerSort: true,
-                        headerMenu: headerMenu,
+                        headerMenu: window.tabulatorHeaderMenu,
                         formatter: function(cell) {
                             const roles = cell.getValue();
                             if (!roles || (Array.isArray(roles) && roles.length === 0)) {
@@ -219,8 +184,8 @@
                             }).join("");
                         }
                     },
-                    { title: "활성여부", field: "is_active", hozAlign: "center", formatter: "tickCross", width: 150, headerSort: true, headerMenu: headerMenu },
-                    { title: "가입일", field: "created_at", width: 200, headerSort: true, headerMenu: headerMenu,
+                    { title: "활성여부", field: "is_active", hozAlign: "center", formatter: "tickCross", width: 130, headerSort: true, headerMenu: window.tabulatorHeaderMenu },
+                    { title: "가입일", field: "created_at", width: 200, headerSort: true, headerMenu: window.tabulatorHeaderMenu,
                         formatter: function(cell) {
                             return new Date(cell.getValue()).toLocaleString('ko-KR');
                         },
@@ -228,7 +193,7 @@
                             return new Date(value).toLocaleString('ko-KR');
                         }
                     },
-                    { title: "마지막 로그인일<br>마지막 로그인IP", field: "last_login_at", width: 200, headerSort: true, headerMenu: headerMenu,
+                    { title: "마지막 로그인일<br>마지막 로그인IP", field: "last_login_at", width: 200, headerSort: true, headerMenu: window.tabulatorHeaderMenu,
                         formatter: function(cell) {
                             var rowData = cell.getRow().getData();
                             var loginAt = rowData.last_login_at ? new Date(rowData.last_login_at).toLocaleString('ko-KR') : '-';
@@ -274,10 +239,7 @@
         initTable();
 
         function getSelectedIds() {
-            // 선택된 행들의 데이터를 가져옴
             let selectedRows = table.getSelectedRows();
-
-            // 각 행에서 id 값을 추출하여 배열로 반환
             let ids = selectedRows.map(row => row.getData().id);
 
             console.log("선택된 ID 목록:", ids);

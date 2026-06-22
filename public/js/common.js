@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let startPicker;
     let endPicker;
 
-    if (typeof flatpickr !== 'undefined') {
+    if (startInput && endInput && typeof flatpickr !== 'undefined') {
         const config = {
             dateFormat: "Y-m-d",
             locale: "ko",
@@ -211,3 +211,38 @@ const tabulatorSettings = {
     }
 };
 Object.assign(Tabulator.defaultOptions, tabulatorSettings);
+
+window.tabulatorHeaderMenu = function() {
+    var menu = [];
+    // 1. 전체 컬럼 중 headerMenu 설정이 있는 컬럼만 필터링
+    var columns = this.getColumns().filter(col => col.getDefinition().headerMenu !== undefined);
+
+    for (let column of columns) {
+        // Tabler 아이콘 (ti-checkbox, ti-square)
+        const iconCheck = '<i class="ti ti-checkbox"></i>';
+        const iconUncheck = '<i class="ti ti-square"></i>';
+
+        let label = document.createElement("span");
+        label.classList.add("d-flex", "align-items-center", "gap-2");
+
+        label.innerHTML = (column.isVisible() ? iconCheck : iconUncheck) +
+                        `<span> ${column.getDefinition().title}</span>`;
+
+        menu.push({
+            label: label,
+            action: function(e) {
+                e.stopPropagation();
+                column.toggle();
+
+                let icon = label.querySelector("i");
+                if (column.isVisible()) {
+                    icon.className = "ti ti-checkbox";
+                } else {
+                    icon.className = "ti ti-square";
+                }
+            }
+        });
+    }
+
+    return menu;
+};

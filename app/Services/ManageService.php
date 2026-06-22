@@ -3,7 +3,11 @@
 namespace App\Services;
 
 use App\Dtos\ManageListRequestDto;
+use App\Dtos\ManageStoreRequestDto;
 use App\Models\Admin;
+use Exception;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Hash;
 
 class ManageService
 {
@@ -14,7 +18,7 @@ class ManageService
         $this->returnMsg = helpersDefaultMessage();
     }
 
-    public function list(ManageListRequestDto $dto)
+    public function list(ManageListRequestDto $dto): LengthAwarePaginator
     {
         $query = Admin::query()->with('roles');
 
@@ -58,5 +62,39 @@ class ManageService
         }
 
         return $query->paginate($dto->size, ['*'], 'page', $dto->page);
+    }
+
+    public function store(ManageStoreRequestDto $dto): array
+    {
+        $returnMsg = $this->returnMsg;
+
+        try {
+            $admin = Admin::find($dto->id) ?? new Admin();
+            if ($admin->exists) {
+                $hashPassWord = Hash::make($dto->password);
+                if( $admin->password !== $hashPassWord ){
+                    throw new Exception('기존 비밀번호가 다릅니다.');
+                }
+            } else {
+                $existing = Admin::where('username', $dto->username)->first();
+                if ($existing !== null) {
+                    throw new Exception('이미 사용 중인 아이디입니다.');
+                }
+            }
+
+            $admin->username  = $dto->username;
+            $admin->password  = Hash::make($dto->password);
+            $admin->name      = $dto->name;
+            $admin->is_active = $dto->isActive;
+            $admin->save();
+
+            $admin->roles()->sync($dto->roles);
+
+            $returnMsg = helpersSuccessMessage();
+        } catch (\Throwable $th) {
+            $returnMsg = helpersFailMessage($th->getMessage());
+        }
+
+        return $returnMsg;
     }
 }

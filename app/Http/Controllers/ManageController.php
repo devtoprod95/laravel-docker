@@ -3,13 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\ManageListRequestDto;
+use App\Dtos\ManageStoreRequestDto;
 use App\Enums\Admin;
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Manage\StoreRequest;
+use App\Models\Admin as ModelsAdmin;
 use App\Models\DeniedRoute;
+use App\Models\Role as ModelsRole;
 use App\Services\ManageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class ManageController extends Controller
@@ -55,7 +60,7 @@ class ManageController extends Controller
             'deninedRoutesObjs' => DeniedRoute::get()
         ];
 
-        return view('manages', $params);
+        return view('manage.list', $params);
     }
 
     public function list(): JsonResponse
@@ -89,5 +94,29 @@ class ManageController extends Controller
         return response()->json($result);
     }
 
+    public function view(int|null $id = null): View
+    {
+        $adminObj = null;
+        if( $id ){
+            $adminObj = ModelsAdmin::with('roles')->find($id);
+        }
 
+        $params = [
+            'adminObj'          => $adminObj,
+            'roles'             => ModelsRole::get(),
+            'actives'           => Admin::isActives(),
+            'deninedRoutesObjs' => DeniedRoute::get()
+        ];
+
+        return view('manage.view', $params);
+    }
+
+    public function store(StoreRequest $request): JsonResponse
+    {
+        $validated = (object) $request->validated();
+        $dto       = new ManageStoreRequestDto($validated);
+        $result    = $this->manageService->store($dto);
+
+        return apiRes(($result['isSuccess'] === true ? Response::HTTP_OK : Response::HTTP_INTERNAL_SERVER_ERROR), $result);
+    }
 }

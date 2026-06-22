@@ -15,6 +15,8 @@ Route::middleware('role')->group(function () {
         Route::prefix('manage')->name('manage.')->group(function () {
             Route::get('/', [ManageController::class, 'index'])->name('index');
             Route::get('/list', [ManageController::class, 'list'])->name('list');
+            Route::get('/view/{id?}', [ManageController::class, 'view'])->name('view');
+            Route::post('/store', [ManageController::class, 'store'])->name('store');
         });
 
         Route::prefix('settings')->name('settings.')->group(function () {
