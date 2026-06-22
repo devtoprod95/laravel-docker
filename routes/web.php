@@ -13,7 +13,8 @@ Route::middleware('role')->group(function () {
         })->name('dashboard');
 
         Route::prefix('manage')->name('manage.')->group(function () {
-            Route::get('/', [ManageController::class, 'list'])->name('list');
+            Route::get('/', [ManageController::class, 'index'])->name('index');
+            Route::get('/list', [ManageController::class, 'list'])->name('list');
         });
 
         Route::prefix('settings')->name('settings.')->group(function () {

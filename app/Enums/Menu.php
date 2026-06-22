@@ -19,7 +19,7 @@ enum Menu: string
                 'name' => '대시보드', 'icon' => 'dashboard', 'route' => 'dashboard', 'pattern' => 'dashboard*'
             ],
             self::Manage => [
-                'name' => '관리자', 'icon' => 'user-cog', 'route' => 'manage.list', 'pattern' => 'manage*'
+                'name' => '관리자', 'icon' => 'user-cog', 'route' => 'manage.index', 'pattern' => 'manage*'
             ],
             self::Settings => [
                 'name' => '설정', 'icon' => 'settings', 'pattern' => 'settings*', 'children' => [
