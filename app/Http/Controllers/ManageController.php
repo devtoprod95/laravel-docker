@@ -35,7 +35,7 @@ class ManageController extends Controller
     public function index(): View
     {
         $role         = $this->request->input('role') ?: '';
-        $isActive     = $this->request->input('isActive') ?: '';
+        $isActive     = $this->request->input('isActive');
         $deninedRoute = $this->request->input('deninedRoute') ?: [];
         $startDate    = $this->request->input('startDate') ?: '';
         $endDate      = $this->request->input('endDate') ?: '';

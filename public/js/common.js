@@ -138,7 +138,11 @@ const tabulatorSettings = {
     paginationButtonCount: 10,
     paginationCounter: function(pageSize, currentRow, currentPage, totalRows, totalPages) {
         var total = window._tableTotalCount || totalRows;
-        return `전체 <strong>${total}</strong>건 / <strong>${currentPage}</strong> 페이지`;
+        var pages = Math.ceil(total / pageSize);
+        let text = `전체 <strong>${total}</strong>건 (<strong>${currentPage}</strong> / <strong>${pages}</strong> 페이지)`;
+        let cleanText = text.replace(/<[^>]*>?/gm, '');
+        $('.page-count').text(cleanText);
+        return text;
     },
 
     // 레이아웃

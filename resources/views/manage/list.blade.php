@@ -43,7 +43,7 @@
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="isActive"
                                     id="isActive_all" value=""
-                                    {{ empty($isActive) ? 'checked' : '' }}
+                                    {{ $isActive === '' || $isActive === null ? 'checked' : '' }}
                                     >
                                     <label class="form-check-label" for="isActive_all">전체</label>
                                 </div>
@@ -51,7 +51,7 @@
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="isActive"
                                         id="isActive_{{ $value }}" value="{{ $value }}"
-                                        {{ $isActive == $value ? 'checked' : '' }}
+                                        {{ $isActive !== '' && $isActive !== null && $isActive == $value ? 'checked' : '' }}
                                         >
                                         <label class="form-check-label" for="isActive_{{ $value }}">{{ $obj }}</label>
                                     </div>
@@ -133,7 +133,10 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header d-flex align-items-center justify-content-between">
-                <h3 class="card-title">관리자 목록</h3>
+                <div class="d-flex align-items-center gap-2">
+                    <h3 class="card-title m-0">관리자 목록</h3>
+                    <span class="page-count badge bg-secondary-lt"></span>
+                </div>
 
                 <div class="d-flex gap-2 ms-auto">
                     <button type="button" class="btn btn-danger btn-remove">
