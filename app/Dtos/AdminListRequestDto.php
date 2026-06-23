@@ -1,7 +1,7 @@
 <?php
 namespace App\Dtos;
 
-class ManageListRequestDto extends Dto
+class AdminListRequestDto extends Dto
 {
     public string $role        = '';
     public ?string $isActive   = '';

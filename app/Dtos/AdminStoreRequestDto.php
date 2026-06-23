@@ -1,7 +1,7 @@
 <?php
 namespace App\Dtos;
 
-class ManageStoreRequestDto extends Dto
+class AdminStoreRequestDto extends Dto
 {
     public int|null $id      = null;
     public string $username  = '';

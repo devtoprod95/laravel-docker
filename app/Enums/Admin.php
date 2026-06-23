@@ -9,6 +9,7 @@ enum Admin: string
 
     case ListSearchUsername = 'username';
     case ListSearchName     = 'name';
+    case RoleListSearchName = 'display_name';
 
     public function label(): string
     {
@@ -17,6 +18,7 @@ enum Admin: string
             self::INACTIVE           => '정지',
             self::ListSearchUsername => '아아디',
             self::ListSearchName     => '이름',
+            self::RoleListSearchName => '권한명',
         };
     }
 
@@ -33,6 +35,13 @@ enum Admin: string
          return [
             self::ListSearchUsername->value => self::ListSearchUsername->label(),
             self::ListSearchName->value     => self::ListSearchName->label(),
+        ];
+    }
+
+    public static function routeListSearchTypes(): array
+    {
+         return [
+            self::RoleListSearchName->value => self::RoleListSearchName->label(),
         ];
     }
 

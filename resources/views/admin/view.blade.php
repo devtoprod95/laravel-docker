@@ -138,7 +138,7 @@
                 }
                 if( await salert({text: confirmText}) ){
                     $.ajax({
-                        url: "{{ route('manage.store') }}",
+                        url: "{{ route('admin.store') }}",
                         type: 'POST',
                         data: formData,
                         processData: false,
@@ -146,7 +146,7 @@
                         success: function(res) {
                             alert(res?.msg);
                             if( res?.status === 200 ){
-                                location.href = "{{ route('manage.index') }}";
+                                location.href = "{{ route('admin.index') }}";
                             }
                         },
                         error: function(xhr) {

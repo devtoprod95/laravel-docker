@@ -52,12 +52,12 @@ html {
 }
 
 .tabulator-footer-contents {
-        display: grid !important;
-        grid-template-columns: 1fr auto 1fr !important; /* 좌측 | 중앙(페이저) | 우측 여백 */
-        align-items: center !important;
-        width: 100% !important;
-        height: 80px;
-    }
+    display: grid !important;
+    grid-template-columns: 1fr auto 1fr !important; /* 좌측 | 중앙(페이저) | 우측 여백 */
+    align-items: center !important;
+    width: 100% !important;
+    height: 80px;
+}
 
 /* 1. 카운터: 1번 칸(좌측)에 배치 */
 .tabulator-page-counter {
@@ -88,4 +88,8 @@ html {
     background-color: #206bc4 !important;
     color: #ffffff !important;
     border-color: #206bc4 !important;
+}
+
+.tabulator-row .tabulator-cell {
+    align-content: center;
 }

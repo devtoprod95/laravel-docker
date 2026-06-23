@@ -4,7 +4,7 @@
 
 @extends('layouts.app')
 
-@section('title', '관리자')
+@section('title', '관리자 목록')
 
 @section('content')
 <div class="row row-cards mt-2">
@@ -115,7 +115,7 @@
                             </div>
                             <div class="col">
                                 <label class="form-label">검색어</label>
-                                <input type="text" class="form-control" name="searchText" value="{{ $searchText }}" placeholder="검색어 입력">
+                                <input type="text" class="form-control" name="searchText" value="{{ $searchText }}" placeholder="검색어 입력" onkeydown="if(event.keyCode === 13) { event.preventDefault(); $('.btn-submit').click(); }">
                             </div>
                             <div class="col-auto">
                                 <button type="button" class="btn btn-primary px-4 btn-submit">검색</button>
@@ -134,7 +134,6 @@
         <div class="card">
             <div class="card-header d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2">
-                    <h3 class="card-title m-0">관리자 목록</h3>
                     <span class="page-count badge bg-secondary-lt"></span>
                 </div>
 
@@ -145,7 +144,7 @@
                     <button type="button" class="btn btn-primary btn-active-modal">
                         <i class="ti ti-clipboard-check me-1"></i> 활성처리
                     </button>
-                    <a href="{{ route('manage.view') }}" class="btn btn-success">
+                    <a href="{{ route('admin.view') }}" class="btn btn-success">
                         <i class="ti ti-plus me-1"></i> 관리자 생성
                     </a>
                 </div>
@@ -190,7 +189,7 @@
 <script>
     $(document).ready(function(){
         var table;
-        const apiUrl = "{{ route('manage.list') }}";
+        const apiUrl = "{{ route('admin.list') }}";
 
         $('.btn-active-modal').click(async function(){
             let selectList = getSelectedIds();
@@ -235,7 +234,7 @@
 
         function fn_active(ids, active){
             $.ajax({
-                url: "{{ route('manage.updateActive') }}",
+                url: "{{ route('admin.updateActive') }}",
                 type: 'PATCH',
                 data: {
                     ids,
@@ -257,7 +256,7 @@
 
         function fn_delete(ids){
             $.ajax({
-                url: "{{ route('manage.delete') }}",
+                url: "{{ route('admin.delete') }}",
                 type: 'DELETE',
                 data: { ids },
                 success: function(res) {
@@ -350,7 +349,7 @@
                                 .text("수정")
                                 .on("click", function() {
                                     var data = cell.getRow().getData();
-                                    location.href = "{{ route('manage.view') }}/" + data.id;
+                                    location.href = "{{ route('admin.view') }}/" + data.id;
                                 });
 
                             // 삭제 버튼 (btn-danger, btn-sm)

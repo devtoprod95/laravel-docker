@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\ManageController;
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('role')->group(function () {
@@ -12,13 +12,24 @@ Route::middleware('role')->group(function () {
             return view('dashboard');
         })->name('dashboard');
 
-        Route::prefix('manage')->name('manage.')->group(function () {
-            Route::get('/', [ManageController::class, 'index'])->name('index');
-            Route::get('/list', [ManageController::class, 'list'])->name('list');
-            Route::get('/view/{id?}', [ManageController::class, 'view'])->name('view');
-            Route::post('/store', [ManageController::class, 'store'])->name('store');
-            Route::delete('/delete', [ManageController::class, 'delete'])->name('delete');
-            Route::patch('/active', [ManageController::class, 'updateActive'])->name('updateActive');
+        Route::prefix('admin')->name('admin.')->group(function () {
+            Route::get('/', [AdminController::class, 'index'])->name('index');
+            Route::get('/list', [AdminController::class, 'list'])->name('list');
+            Route::get('/view/{id?}', [AdminController::class, 'view'])->name('view');
+            Route::post('/store', [AdminController::class, 'store'])->name('store');
+            Route::delete('/delete', [AdminController::class, 'delete'])->name('delete');
+            Route::patch('/active', [AdminController::class, 'updateActive'])->name('updateActive');
+
+            Route::prefix('role')->name('role.')->group(function () {
+                Route::get('/', [AdminController::class, 'roleIndex'])->name('index');
+                Route::get('/list', [AdminController::class, 'roleList'])->name('list');
+                Route::get('/{id?}', [AdminController::class, 'roleInfo'])->name('info');
+                Route::delete('/delete', [AdminController::class, 'droleDeleteelete'])->name('delete');
+
+                Route::prefix('route')->name('route.')->group(function () {
+                    Route::get('/', [AdminController::class, 'index'])->name('index');
+                });
+            });
         });
 
         Route::prefix('settings')->name('settings.')->group(function () {

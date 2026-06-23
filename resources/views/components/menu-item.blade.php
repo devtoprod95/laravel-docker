@@ -3,7 +3,7 @@
 @if(isset($item['children']))
     {{-- 3뎁스 이상인 경우: Dropend (또는 Dropdown) --}}
     <div class="dropend">
-        <a href="#" class="dropdown-item dropdown-toggle {{ request()->is($item['pattern']) ? 'active' : '' }}"
+        <a href="#" class="dropdown-item dropdown-toggle {{ request()->routeIs($item['pattern']) ? 'active' : '' }}"
            data-bs-toggle="dropdown"
            onclick="event.stopPropagation();"
         >
@@ -17,7 +17,7 @@
     </div>
 @else
     {{-- 2뎁스 이하인 경우: 일반 링크 --}}
-    <a href="{{ route($item['route']) }}" class="dropdown-item {{ request()->is($item['pattern']) ? 'active' : '' }}">
+    <a href="{{ route($item['route']) }}" class="dropdown-item {{ request()->routeIs($item['pattern'] ?? '') ? 'active' : '' }}">
         {{ $item['name'] }}
     </a>
 @endif

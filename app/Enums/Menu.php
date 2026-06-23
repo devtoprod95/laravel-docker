@@ -6,7 +6,7 @@ enum Menu: string
 {
     case Home      = 'home';
     case Dashboard = 'dashboard';
-    case Manage    = 'manage';
+    case Admin     = 'admin';
     case Settings  = 'settings';
 
     public function info(): array
@@ -18,8 +18,16 @@ enum Menu: string
             self::Dashboard => [
                 'name' => '대시보드', 'icon' => 'dashboard', 'route' => 'dashboard', 'pattern' => 'dashboard*'
             ],
-            self::Manage => [
-                'name' => '관리자', 'icon' => 'user-cog', 'route' => 'manage.index', 'pattern' => 'manage*'
+            self::Admin => [
+                'name' => '관리자', 'icon' => 'user-cog', 'pattern' => 'admin*', 'children' => [
+                    ['name' => '관리자 목록', 'route' => 'admin.index', 'pattern' => 'admin.index*'],
+                    [
+                        'name' => '권한 관리', 'pattern' => 'admin.role*', 'children' => [
+                            ['name' => '권한 목록', 'route' => 'admin.role.index', 'pattern' => 'admin.role.index*'],
+                            ['name' => '권한 라우팅 목록', 'route' => 'admin.role.route.index', 'pattern' => 'admin.role.route.index*'],
+                        ]
+                    ],
+                ]
             ],
             self::Settings => [
                 'name' => '설정', 'icon' => 'settings', 'pattern' => 'settings*', 'children' => [

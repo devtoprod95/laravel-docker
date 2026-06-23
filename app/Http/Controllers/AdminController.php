@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Dtos\ManageListRequestDto;
-use App\Dtos\ManageStoreRequestDto;
+use App\Dtos\AdminListRequestDto;
+use App\Dtos\AdminRoleListRequestDto;
+use App\Dtos\AdminStoreRequestDto;
 use App\Enums\Admin;
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
@@ -11,25 +12,25 @@ use App\Http\Requests\Manage\StoreRequest;
 use App\Models\Admin as ModelsAdmin;
 use App\Models\DeniedRoute;
 use App\Models\Role as ModelsRole;
-use App\Services\ManageService;
+use App\Services\AdminService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
-class ManageController extends Controller
+class AdminController extends Controller
 {
     protected Request $request;
-    protected ManageService $manageService;
+    protected AdminService $adminService;
 
     public function __construct(
         Request $request,
-        ManageService $manageService
+        AdminService $adminService
     )
     {
-        $this->request       = $request;
-        $this->manageService = $manageService;
+        $this->request      = $request;
+        $this->adminService = $adminService;
     }
 
     public function index(): View
@@ -61,7 +62,7 @@ class ManageController extends Controller
             'deninedRoutesObjs' => DeniedRoute::get()
         ];
 
-        return view('manage.list', $params);
+        return view('admin.list', $params);
     }
 
     public function list(): JsonResponse
@@ -88,9 +89,9 @@ class ManageController extends Controller
             'size'         => $size,
             'sort'         => $sort,
         ];
-        $dto = new ManageListRequestDto();
+        $dto = new AdminListRequestDto();
         $dto->bind($dtoBind);
-        $result = $this->manageService->list($dto);
+        $result = $this->adminService->list($dto);
 
         return response()->json($result);
     }
@@ -109,14 +110,14 @@ class ManageController extends Controller
             'deninedRoutesObjs' => DeniedRoute::get()
         ];
 
-        return view('manage.view', $params);
+        return view('admin.view', $params);
     }
 
     public function store(StoreRequest $request): JsonResponse
     {
         $validated = (object) $request->validated();
-        $dto       = new ManageStoreRequestDto($validated);
-        $result    = $this->manageService->store($dto);
+        $dto       = new AdminStoreRequestDto($validated);
+        $result    = $this->adminService->store($dto);
 
         return apiRes(($result['isSuccess'] === true ? Response::HTTP_OK : Response::HTTP_INTERNAL_SERVER_ERROR), $result);
     }
@@ -136,7 +137,7 @@ class ManageController extends Controller
         }
 
         $ids    = $this->request->input('ids');
-        $result = $this->manageService->delete($ids);
+        $result = $this->adminService->delete($ids);
 
         return apiRes(($result['isSuccess'] === true ? Response::HTTP_OK : Response::HTTP_INTERNAL_SERVER_ERROR), $result);
     }
@@ -160,7 +161,90 @@ class ManageController extends Controller
 
         $ids      = $this->request->input('ids');
         $isActive = $this->request->input('is_active');
-        $result   = $this->manageService->updateActive($ids, $isActive);
+        $result   = $this->adminService->updateActive($ids, $isActive);
+
+        return apiRes(($result['isSuccess'] === true ? Response::HTTP_OK : Response::HTTP_INTERNAL_SERVER_ERROR), $result);
+    }
+
+    public function roleIndex(): View
+    {
+        $deninedRoute = $this->request->input('deninedRoute') ?: [];
+        $searchType   = $this->request->input('searchType') ?: Admin::RoleListSearchName;
+        $searchText   = $this->request->input('searchText') ?: '';
+        $page         = $this->request->input('page') ?: 1;
+        $size         = $this->request->input('size') ?: 30;
+        $sort         = $this->request->input('sort')[0] ?? ['field' => 'id', 'dir' => 'desc'];
+        $params       = [
+            'deninedRoute'      => $deninedRoute,
+            'searchType'        => $searchType,
+            'searchText'        => $searchText,
+            'page'              => $page,
+            'size'              => $size,
+            'sort'              => $sort,
+            'roles'             => Role::cases(),
+            'searchTypes'       => Admin::routeListSearchTypes(),
+            'deninedRoutesObjs' => DeniedRoute::get()
+        ];
+
+        return view('admin.roleList', $params);
+    }
+
+    public function roleList(): JsonResponse
+    {
+        $deninedRoute = $this->request->input('deninedRoute') ?: [];
+        $searchType   = $this->request->input('searchType') ?: Admin::ListSearchUsername->value;
+        $searchText   = $this->request->input('searchText') ?: '';
+        $page         = $this->request->input('page') ?: 1;
+        $size         = $this->request->input('size') ?: 30;
+        $sort         = $this->request->input('sort')[0] ?? ['field' => 'id', 'dir' => 'desc'];
+        $dtoBind      = [
+            'deninedRoute' => $deninedRoute,
+            'searchType'   => $searchType,
+            'searchText'   => $searchText,
+            'page'         => $page,
+            'size'         => $size,
+            'sort'         => $sort,
+        ];
+        $dto = new AdminRoleListRequestDto();
+        $dto->bind($dtoBind);
+        $result = $this->adminService->roleList($dto);
+
+        return response()->json($result);
+    }
+
+    public function roleInfo(int $id): JsonResponse
+    {
+        $validator = Validator::make($this->request->all(), [
+            'id' => 'integer',
+        ], [
+            'id.required' => '항목을 전달해주세요.',
+            'id.integer'  => '유효하지 않은 ID 형식입니다.',
+        ]);
+        if ($validator->fails()) {
+            return apiRes(Response::HTTP_BAD_REQUEST, helpersFailMessage());
+        }
+
+        $result = $this->adminService->roleInfo($id);
+
+        return apiRes(($result['isSuccess'] === true ? Response::HTTP_OK : Response::HTTP_INTERNAL_SERVER_ERROR), $result);
+    }
+
+    public function roleDelete(): JsonResponse
+    {
+        $validator = Validator::make($this->request->all(), [
+            'ids'   => 'required|array',
+            'ids.*' => 'integer',
+        ], [
+            'ids.required'  => '항목을 전달해주세요.',
+            'ids.array'     => '잘못된 요청 형식입니다.',
+            'ids.*.integer' => '유효하지 않은 ID 형식입니다.',
+        ]);
+        if ($validator->fails()) {
+            return apiRes(Response::HTTP_BAD_REQUEST, helpersFailMessage());
+        }
+
+        $ids    = $this->request->input('ids');
+        $result = $this->adminService->roleDelete($ids);
 
         return apiRes(($result['isSuccess'] === true ? Response::HTTP_OK : Response::HTTP_INTERNAL_SERVER_ERROR), $result);
     }
