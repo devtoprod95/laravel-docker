@@ -17,6 +17,8 @@ Route::middleware('role')->group(function () {
             Route::get('/list', [ManageController::class, 'list'])->name('list');
             Route::get('/view/{id?}', [ManageController::class, 'view'])->name('view');
             Route::post('/store', [ManageController::class, 'store'])->name('store');
+            Route::delete('/delete', [ManageController::class, 'delete'])->name('delete');
+            Route::patch('/active', [ManageController::class, 'updateActive'])->name('updateActive');
         });
 
         Route::prefix('settings')->name('settings.')->group(function () {

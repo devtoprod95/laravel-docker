@@ -1,3 +1,7 @@
+@php
+    use App\Enums\Admin;
+@endphp
+
 @extends('layouts.app')
 
 @section('title')
@@ -69,18 +73,20 @@
                             <div class="col-md-6 mb-3">
                                 <label class="form-label required">활성여부</label>
                                 <div class="form-selectgroup">
-                                    <label class="form-selectgroup-item">
-                                        <input type="radio" name="is_active" value="1" class="form-selectgroup-input" checked>
-                                        <span class="form-selectgroup-label">
-                                            <i class="ti ti-check me-1"></i> 활성
-                                        </span>
-                                    </label>
-                                    <label class="form-selectgroup-item">
-                                        <input type="radio" name="is_active" value="0" class="form-selectgroup-input">
-                                        <span class="form-selectgroup-label">
-                                            <i class="ti ti-x me-1"></i> 비활성
-                                        </span>
-                                    </label>
+                                    @foreach (Admin::isActives() as $value => $label)
+                                        <label class="form-selectgroup-item">
+                                            <input type="radio"
+                                                name="is_active"
+                                                value="{{ $value }}"
+                                                class="form-selectgroup-input"
+                                                {{ (isset($adminObj) && $adminObj->is_active == $value) || (!isset($adminObj) && $value == \App\Enums\Admin::ACTIVE->value) ? 'checked' : '' }}>
+
+                                            <span class="form-selectgroup-label">
+                                                <i class="ti {{ $value == \App\Enums\Admin::ACTIVE->value ? 'ti-check' : 'ti-x' }} me-1"></i>
+                                                {{ $label }}
+                                            </span>
+                                        </label>
+                                    @endforeach
                                 </div>
                             </div>
 
@@ -89,7 +95,7 @@
 
                     <div class="card-footer d-flex justify-content-center gap-2">
                         <button type="button" class="btn btn-secondary" onclick="history.back()">뒤로가기</button>
-                        <button type="button" class="btn btn-primary btn-save">등록하기</button>
+                        <button type="button" class="btn btn-primary btn-save">{{ empty($adminObj) ? '등록' : '수정' }}하기</button>
                     </div>
                 </div>
             </form>
@@ -103,6 +109,7 @@
                 let username = $('input[name=username]').val();
                 let password = $('input[name=password]').val();
                 let name     = $('input[name=name]').val();
+                let id       = $('input[name=id]').val();
                 let roles    = $('input[name="roles[]"]:checked').map(function() {
                     return $(this).val();
                 }).get();
@@ -125,12 +132,18 @@
                     return false;
                 }
 
-                if( await salert({text: '관리자를 등록하시겠습니까?'}) ){
+                let confirmText = '관리자를 등록하시겠습니까?';
+                if(id){
+                    confirmText = '관리자를 수정하시겠습니까?';
+                }
+                if( await salert({text: confirmText}) ){
                     $.ajax({
                         url: "{{ route('manage.store') }}",
                         type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
                         success: function(res) {
-                            return console.log(res);
                             alert(res?.msg);
                             if( res?.status === 200 ){
                                 location.href = "{{ route('manage.index') }}";
@@ -142,10 +155,6 @@
                         }
                     });
                 }
-
-
-
-
             });
         });
     </script>

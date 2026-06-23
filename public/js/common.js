@@ -5,6 +5,7 @@ window.salert = async function(options = {}) {
         html: options.html || null, // HTML 속성 추가
         icon: options.icon || 'warning',
         showCancelButton: options.cancel !== false,
+        reverseButtons: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
         confirmButtonText: '확인',
@@ -136,13 +137,15 @@ const tabulatorSettings = {
     paginationSize: 30,
     paginationButtonCount: 10,
     paginationCounter: function(pageSize, currentRow, currentPage, totalRows, totalPages) {
-        return `전체 <strong>${totalRows}</strong>건 / <strong>${currentPage}</strong> 페이지`;
+        var total = window._tableTotalCount || totalRows;
+        return `전체 <strong>${total}</strong>건 / <strong>${currentPage}</strong> 페이지`;
     },
 
     // 레이아웃
     layout: "fitColumns",
     renderVertical: "virtual",
     placeholder: "데이터가 없습니다.",
+    height: "600px",
 
     // 로케일
     locale: "ko",
@@ -207,8 +210,9 @@ const tabulatorSettings = {
         flattenParams(params);
 
         window.history.replaceState({}, '', urlObj);
+        window._tableTotalCount = response.total;
         return response;
-    }
+    },
 };
 Object.assign(Tabulator.defaultOptions, tabulatorSettings);
 

@@ -1,3 +1,7 @@
+@php
+    use App\Enums\Admin;
+@endphp
+
 @extends('layouts.app')
 
 @section('title', '관리자')
@@ -128,21 +132,143 @@
     {{-- 2. 결과 목록 영역 --}}
     <div class="col-12">
         <div class="card">
-            <div class="card-header justify-content-between">
+            <div class="card-header d-flex align-items-center justify-content-between">
                 <h3 class="card-title">관리자 목록</h3>
-                <a href="{{ route('manage.view') }}" class="btn btn-success"><i class="ti ti-plus me-1"></i> 관리자 생성</a>
+
+                <div class="d-flex gap-2 ms-auto">
+                    <button type="button" class="btn btn-danger btn-remove">
+                        <i class="ti ti-trash me-1"></i> 삭제
+                    </button>
+                    <button type="button" class="btn btn-primary btn-active-modal">
+                        <i class="ti ti-clipboard-check me-1"></i> 활성처리
+                    </button>
+                    <a href="{{ route('manage.view') }}" class="btn btn-success">
+                        <i class="ti ti-plus me-1"></i> 관리자 생성
+                    </a>
+                </div>
             </div>
 
             <div id="example-table"></div>
 
         </div>
     </div>
+
+    <div class="modal modal-blur fade" id="activeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">활성화 변경</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex align-items-center justify-content-center gap-3">
+                        <label class="form-label mb-0 fw-bold">활성 여부</label>
+
+                        <div class="form-selectgroup selectgroup-pills">
+                            @foreach (Admin::isActives() as $value => $label)
+                                <label class="form-selectgroup-item">
+                                    <input type="radio" name="is_active_modal" value="{{ $value }}" class="form-selectgroup-input">
+                                    <span class="form-selectgroup-label">{{ $label }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary ms-auto btn-active-save">적용하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
     $(document).ready(function(){
         var table;
         const apiUrl = "{{ route('manage.list') }}";
+
+        $('.btn-active-modal').click(async function(){
+            let selectList = getSelectedIds();
+            if(selectList.length < 1){
+                await salert({text: '최소 1개 이상 선택해주세요.', cancel: false});
+                return false;
+            }
+
+            $('#activeModal').modal('show');
+        })
+
+        $('.btn-active-save').click(async function(){
+            let selectList = getSelectedIds();
+            if(selectList.length < 1){
+                await salert({text: '최소 1개 이상 선택해주세요.', cancel: false});
+                return false;
+            }
+
+            let active = $('input[name=is_active_modal]:checked').val();
+            if( !active ){
+                await salert({text: '활성 여부를 선택해주세요.', cancel: false});
+                return false;
+            }
+
+            var selectedLabel = $('input[name=is_active_modal]:checked').siblings('span').text().trim();
+            if(await salert({text: `선택 한 ${selectList.length}개를 [${selectedLabel}] 처리 하시겠습니까?`})){
+                fn_active(selectList, active);
+            }
+        });
+
+        $('.btn-remove').click(async function(){
+            let selectList = getSelectedIds();
+            if(selectList.length < 1){
+                await salert({text: '최소 1개 이상 선택해주세요.', cancel: false});
+                return false;
+            }
+
+            if(await salert({text: `선택 한 ${selectList.length}개를 삭제하시겠습니까?`})){
+                fn_delete(selectList);
+            }
+        });
+
+        function fn_active(ids, active){
+            $.ajax({
+                url: "{{ route('manage.updateActive') }}",
+                type: 'PATCH',
+                data: {
+                    ids,
+                    is_active: active
+                },
+                success: function(res) {
+                    alert(res?.msg);
+                    if (res?.status === 200) {
+                        $('#activeModal').modal('hide');
+                        table.setData();
+                    }
+                },
+                error: function(xhr) {
+                    var res = xhr?.responseJSON;
+                    alert(res?.error?.message ?? '오류가 발생했습니다.');
+                }
+            });
+        };
+
+        function fn_delete(ids){
+            $.ajax({
+                url: "{{ route('manage.delete') }}",
+                type: 'DELETE',
+                data: { ids },
+                success: function(res) {
+                    alert(res?.msg);
+                    if (res?.status === 200) {
+                        table.setData();
+                    }
+                },
+                error: function(xhr) {
+                    var res = xhr?.responseJSON;
+                    alert(res?.error?.message ?? '오류가 발생했습니다.');
+                }
+            });
+        };
 
         function initTable(params = {}) {
             table = new Tabulator("#example-table", {
@@ -162,9 +288,11 @@
                     { title: "No", field: "id", width: 80, clipboard: false, headerSort: true,
                         formatter: function(cell) {
                             var table = cell.getTable();
-                            var totalRows = table.getDataCount("active");  // 현재 필터된 전체 수
-                            var rowIndex = cell.getRow().getPosition();     // 현재 행 위치 (1부터)
-                            return totalRows - rowIndex + 1;
+                            var total = window._tableTotalCount || table.getDataCount(true);
+                            var page = table.getPage();
+                            var pageSize = table.getPageSize();
+                            var rowIndex = cell.getRow().getPosition();
+                            return total - ((page - 1) * pageSize) - rowIndex + 1;
                         }
                     },
                     { title: "아이디", field: "username", headerSort: true, headerMenu: window.tabulatorHeaderMenu },
@@ -176,12 +304,15 @@
                         headerMenu: window.tabulatorHeaderMenu,
                         formatter: function(cell) {
                             const roles = cell.getValue();
-                            if (!roles || (Array.isArray(roles) && roles.length === 0)) {
+                            if (!roles || !Array.isArray(roles) || roles.length === 0) {
                                 return '<span class="text-muted">-</span>';
                             }
                             return roles.map(role => {
                                 return `<div class="mb-1"><span class="badge bg-blue-lt">${role.display_name}</span></div>`;
                             }).join("");
+                        },
+                        accessorClipboard: function(value, data) {
+                            return value.map(role => role.display_name).join(", ");
                         }
                     },
                     { title: "활성여부", field: "is_active", hozAlign: "center", formatter: "tickCross", width: 130, headerSort: true, headerMenu: window.tabulatorHeaderMenu },
@@ -216,16 +347,18 @@
                                 .text("수정")
                                 .on("click", function() {
                                     var data = cell.getRow().getData();
-                                    console.log("수정:", data);
+                                    location.href = "{{ route('manage.view') }}/" + data.id;
                                 });
 
                             // 삭제 버튼 (btn-danger, btn-sm)
                             var $deleteBtn = $("<button>")
                                 .addClass("btn btn-sm btn-danger w-100")
                                 .text("삭제")
-                                .on("click", function() {
+                                .on("click", async function() {
                                     var data = cell.getRow().getData();
-                                    console.log("삭제:", data);
+                                    if( await salert({text: `${data.name} 회원을 삭제하시겠습니까?`}) ){
+                                        fn_delete([data.id]);
+                                    }
                                 });
 
                             return $container.append($editBtn, $deleteBtn).get(0);
@@ -242,12 +375,10 @@
             let selectedRows = table.getSelectedRows();
             let ids = selectedRows.map(row => row.getData().id);
 
-            console.log("선택된 ID 목록:", ids);
             return ids;
         }
 
         $('.btn-submit').click(function(){
-            getSelectedIds();
             table.setData();
         });
     })

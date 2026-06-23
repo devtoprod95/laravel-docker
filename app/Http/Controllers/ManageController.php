@@ -15,6 +15,7 @@ use App\Services\ManageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
 class ManageController extends Controller
@@ -116,6 +117,50 @@ class ManageController extends Controller
         $validated = (object) $request->validated();
         $dto       = new ManageStoreRequestDto($validated);
         $result    = $this->manageService->store($dto);
+
+        return apiRes(($result['isSuccess'] === true ? Response::HTTP_OK : Response::HTTP_INTERNAL_SERVER_ERROR), $result);
+    }
+
+    public function delete(): JsonResponse
+    {
+        $validator = Validator::make($this->request->all(), [
+            'ids'   => 'required|array',
+            'ids.*' => 'integer',
+        ], [
+            'ids.required'  => '항목을 전달해주세요.',
+            'ids.array'     => '잘못된 요청 형식입니다.',
+            'ids.*.integer' => '유효하지 않은 ID 형식입니다.',
+        ]);
+        if ($validator->fails()) {
+            return apiRes(Response::HTTP_BAD_REQUEST, helpersFailMessage());
+        }
+
+        $ids    = $this->request->input('ids');
+        $result = $this->manageService->delete($ids);
+
+        return apiRes(($result['isSuccess'] === true ? Response::HTTP_OK : Response::HTTP_INTERNAL_SERVER_ERROR), $result);
+    }
+
+    public function updateActive(): JsonResponse
+    {
+        $validator = Validator::make($this->request->all(), [
+            'ids'       => 'required|array',
+            'ids.*'     => 'integer',
+            'is_active' => 'required|string',
+        ], [
+            'ids.required'       => '항목을 전달해주세요.',
+            'ids.array'          => '잘못된 요청 형식입니다.',
+            'ids.*.integer'      => '유효하지 않은 ID 형식입니다.',
+            'is_active.required' => '활성 여부를 전달해주세요.',
+            'is_active.string'   => '잘못된 요청 형식입니다.',
+        ]);
+        if ($validator->fails()) {
+            return apiRes(Response::HTTP_BAD_REQUEST, helpersFailMessage());
+        }
+
+        $ids      = $this->request->input('ids');
+        $isActive = $this->request->input('is_active');
+        $result   = $this->manageService->updateActive($ids, $isActive);
 
         return apiRes(($result['isSuccess'] === true ? Response::HTTP_OK : Response::HTTP_INTERNAL_SERVER_ERROR), $result);
     }
