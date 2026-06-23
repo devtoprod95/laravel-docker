@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Route;
 
 class DeniedRoute extends Model
 {
@@ -11,6 +12,7 @@ class DeniedRoute extends Model
     protected $fillable = [];
     protected $hidden   = [];
     protected $guarded  = [];
+    protected $appends  = ['route_url'];
 
     public function roles(): BelongsToMany
     {
@@ -20,5 +22,12 @@ class DeniedRoute extends Model
             'route_id',              // 현재 모델의 FK
             'role_id'                // 상대 모델의 FK
         );
+    }
+
+    public function getRouteUrlAttribute(): string
+    {
+        return Route::has($this->route)
+        ? route($this->route, [], false)
+        : '';
     }
 }

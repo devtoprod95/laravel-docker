@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Dtos\AdminListRequestDto;
 use App\Dtos\AdminRoleListRequestDto;
+use App\Dtos\AdminRoleRouteListRequestDto;
+use App\Dtos\AdminRoleRouteStoreRequestDto;
 use App\Dtos\AdminRoleStoreRequestDto;
 use App\Dtos\AdminStoreRequestDto;
 use App\Enums\Admin;
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\RoleRouteStoreRequest;
 use App\Http\Requests\Admin\RoleStoreRequest;
 use App\Http\Requests\Admin\StoreRequest;
 use App\Models\Admin as ModelsAdmin;
@@ -42,7 +45,7 @@ class AdminController extends Controller
         $deninedRoute = $this->request->input('deninedRoute') ?: [];
         $startDate    = $this->request->input('startDate') ?: '';
         $endDate      = $this->request->input('endDate') ?: '';
-        $searchType   = $this->request->input('searchType') ?: Admin::ListSearchUsername;
+        $searchType   = $this->request->input('searchType') ?: Admin::ListSearchUsername->value;
         $searchText   = $this->request->input('searchText') ?: '';
         $page         = $this->request->input('page') ?: 1;
         $size         = $this->request->input('size') ?: 30;
@@ -171,7 +174,7 @@ class AdminController extends Controller
     public function roleIndex(): View
     {
         $deninedRoute = $this->request->input('deninedRoute') ?: [];
-        $searchType   = $this->request->input('searchType') ?: Admin::RoleListSearchName;
+        $searchType   = $this->request->input('searchType') ?: Admin::RoleListSearchName->value;
         $searchText   = $this->request->input('searchText') ?: '';
         $page         = $this->request->input('page') ?: 1;
         $size         = $this->request->input('size') ?: 30;
@@ -183,8 +186,7 @@ class AdminController extends Controller
             'page'              => $page,
             'size'              => $size,
             'sort'              => $sort,
-            'roles'             => Role::cases(),
-            'searchTypes'       => Admin::routeListSearchTypes(),
+            'searchTypes'       => Admin::roleListSearchTypes(),
             'deninedRoutesObjs' => DeniedRoute::get()
         ];
 
@@ -256,6 +258,94 @@ class AdminController extends Controller
         $validated = (object) $request->validated();
         $dto       = new AdminRoleStoreRequestDto($validated);
         $result    = $this->adminService->roleStore($dto);
+
+        return apiRes(($result['isSuccess'] === true ? Response::HTTP_OK : Response::HTTP_INTERNAL_SERVER_ERROR), $result);
+    }
+
+    public function roleRouteIndex(): View
+    {
+        $searchType   = $this->request->input('searchType') ?: Admin::RoleRouteListSearchName->value;
+        $searchText   = $this->request->input('searchText') ?: '';
+        $page         = $this->request->input('page') ?: 1;
+        $size         = $this->request->input('size') ?: 30;
+        $sort         = $this->request->input('sort')[0] ?? ['field' => 'id', 'dir' => 'desc'];
+        $params       = [
+            'searchType'  => $searchType,
+            'searchText'  => $searchText,
+            'page'        => $page,
+            'size'        => $size,
+            'sort'        => $sort,
+            'searchTypes' => Admin::roleRouteListSearchTypes(),
+            'routeList'   => routeList(),
+            'roles'       => ModelsRole::get(),
+        ];
+
+        return view('admin.roleRouteList', $params);
+    }
+
+    public function roleRouteList(): JsonResponse
+    {
+        $searchType = $this->request->input('searchType') ?: Admin::RoleRouteListSearchName->value;
+        $searchText = $this->request->input('searchText') ?: '';
+        $page       = $this->request->input('page') ?: 1;
+        $size       = $this->request->input('size') ?: 30;
+        $sort       = $this->request->input('sort')[0] ?? ['field' => 'id', 'dir' => 'desc'];
+        $dtoBind    = [
+            'searchType' => $searchType,
+            'searchText' => $searchText,
+            'page'       => $page,
+            'size'       => $size,
+            'sort'       => $sort,
+        ];
+        $dto = new AdminRoleRouteListRequestDto();
+        $dto->bind($dtoBind);
+        $result = $this->adminService->roleRouteList($dto);
+
+        return response()->json($result);
+    }
+
+    public function roleRouteInfo(int $id): JsonResponse
+    {
+        $validator = Validator::make($this->request->all(), [
+            'id' => 'integer',
+        ], [
+            'id.required' => '항목을 전달해주세요.',
+            'id.integer'  => '유효하지 않은 ID 형식입니다.',
+        ]);
+        if ($validator->fails()) {
+            return apiRes(Response::HTTP_BAD_REQUEST, helpersFailMessage());
+        }
+
+        $result = $this->adminService->roleRouteInfo($id);
+
+        return apiRes(($result['isSuccess'] === true ? Response::HTTP_OK : Response::HTTP_INTERNAL_SERVER_ERROR), $result);
+    }
+
+    public function roleRouteDelete(): JsonResponse
+    {
+        $validator = Validator::make($this->request->all(), [
+            'ids'   => 'required|array',
+            'ids.*' => 'integer',
+        ], [
+            'ids.required'  => '항목을 전달해주세요.',
+            'ids.array'     => '잘못된 요청 형식입니다.',
+            'ids.*.integer' => '유효하지 않은 ID 형식입니다.',
+        ]);
+        if ($validator->fails()) {
+            return apiRes(Response::HTTP_BAD_REQUEST, helpersFailMessage());
+        }
+
+        $ids    = $this->request->input('ids');
+        $result = $this->adminService->roleRouteDelete($ids);
+
+        return apiRes(($result['isSuccess'] === true ? Response::HTTP_OK : Response::HTTP_INTERNAL_SERVER_ERROR), $result);
+    }
+
+    public function roleRouteStore(RoleRouteStoreRequest $request): JsonResponse
+    {
+        $validated = (object) $request->validated();
+        $dto       = new AdminRoleRouteStoreRequestDto($validated);
+        $result    = $this->adminService->roleRouteStore($dto);
 
         return apiRes(($result['isSuccess'] === true ? Response::HTTP_OK : Response::HTTP_INTERNAL_SERVER_ERROR), $result);
     }

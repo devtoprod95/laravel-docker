@@ -1,9 +1,8 @@
 <?php
 namespace App\Dtos;
 
-class AdminRoleListRequestDto extends Dto
+class AdminRoleRouteListRequestDto extends Dto
 {
-    public array $deninedRoute = [];
     public string $searchType  = '';
     public string $searchText  = '';
     public array $sort         = ['field' => 'id', 'dir' => 'desc'];
@@ -12,7 +11,6 @@ class AdminRoleListRequestDto extends Dto
 
     public function bind(mixed $data): void
     {
-        $this->deninedRoute = $data['deninedRoute'];
         $this->searchType   = $data['searchType'];
         $this->searchText   = $data['searchText'];
         $this->sort         = $data['sort'];

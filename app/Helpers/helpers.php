@@ -3,6 +3,8 @@
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 
 if (!function_exists("apiRes")) {
     function apiRes(int $status, array $params = [], string $message = ""): JsonResponse
@@ -79,5 +81,26 @@ if (!function_exists("helpersCustomArrayMessage")) {
     {
         $result["isSuccess"] = $isSuccess;
 		return array_merge($result, $body);
+    }
+}
+
+if (!function_exists("routeList")) {
+    function routeList(): array
+    {
+        $routes            = Route::getRoutes();
+        $permittedPrefixes = ['admin.', 'settings.', 'dashboard'];
+        $filteredRoutes    = [];
+
+        foreach ($routes as $route) {
+            $name = $route->getName();
+            if ($name && in_array('GET', $route->methods()) && Str::startsWith($name, $permittedPrefixes)) {
+                $filteredRoutes[] = [
+                    'name' => $name,
+                    'uri'  => '/' . $route->uri(),
+                ];
+            }
+        }
+
+        return $filteredRoutes;
     }
 }

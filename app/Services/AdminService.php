@@ -4,13 +4,18 @@ namespace App\Services;
 
 use App\Dtos\AdminListRequestDto;
 use App\Dtos\AdminRoleListRequestDto;
+use App\Dtos\AdminRoleRouteListRequestDto;
+use App\Dtos\AdminRoleRouteStoreRequestDto;
 use App\Dtos\AdminRoleStoreRequestDto;
 use App\Dtos\AdminStoreRequestDto;
 use App\Models\Admin;
+use App\Models\DeniedRoute;
 use App\Models\Role;
 use Exception;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Route;
 
 class AdminService
 {
@@ -215,6 +220,86 @@ class AdminService
             $obj->display_name = $dto->displayName;
             $obj->name         = $dto->name;
             $obj->save();
+
+            $returnMsg = helpersSuccessMessage();
+        } catch (\Throwable $th) {
+            $returnMsg = helpersFailMessage($th->getMessage());
+        }
+
+        return $returnMsg;
+    }
+
+    public function roleRouteList(AdminRoleRouteListRequestDto $dto): LengthAwarePaginator
+    {
+        $query = DeniedRoute::query()->withCount(['roles' => function ($query) {
+            $query->select(DB::raw('count(distinct roles.id)'));
+        }]);
+
+        // 검색
+        if (!empty($dto->searchText)) {
+            $query->where($dto->searchType, 'like', '%' . $dto->searchText . '%');
+        }
+
+        // 정렬
+        if (!empty($dto->sort)) {
+            $query->orderBy($dto->sort['field'], $dto->sort['dir']);
+        }
+
+        return $query->paginate($dto->size, ['*'], 'page', $dto->page);
+    }
+
+    public function roleRouteInfo(int $id): array
+    {
+        $returnMsg = $this->returnMsg;
+        $obj       = DeniedRoute::with(['roles' => function ($query) {
+            $query->select('roles.*')->distinct();
+        }])->find($id);
+
+        $returnMsg = helpersCustomArrayMessage(true, ['data' => $obj ?? []]);
+
+        return $returnMsg;
+    }
+
+    public function roleRouteDelete(array $ids): array
+    {
+        $returnMsg = $this->returnMsg;
+
+        try {
+            $objs = DeniedRoute::whereIn('id', $ids)->get();
+            if ($objs->isEmpty()) {
+                throw new Exception('페이지를 찾을 수 없습니다.');
+            }
+
+            foreach ($objs as $obj) {
+                $obj->delete();
+            }
+
+            $returnMsg = helpersSuccessMessage();
+        } catch (\Throwable $th) {
+            $returnMsg = helpersFailMessage($th->getMessage());
+        }
+
+        return $returnMsg;
+    }
+
+    public function roleRouteStore(AdminRoleRouteStoreRequestDto $dto): array
+    {
+        $returnMsg = $this->returnMsg;
+
+        try {
+            $exists = DeniedRoute::where('route', $dto->route)->exists();
+            if( $exists ){
+                throw new Exception('이미 등록된 페이지입니다.');
+            }
+            if (!Route::has($dto->route)) {
+                throw new Exception('존재하지 않는 페이지입니다: ' . $dto->route);
+            }
+
+            $deniedRoute = DeniedRoute::create([
+                'route'      => $dto->route,
+                'route_name' => $dto->routeName
+            ]);
+            $deniedRoute->roles()->attach($dto->roles);
 
             $returnMsg = helpersSuccessMessage();
         } catch (\Throwable $th) {

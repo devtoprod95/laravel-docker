@@ -93,3 +93,7 @@ html {
 .tabulator-row .tabulator-cell {
     align-content: center;
 }
+
+.choices__input {
+    width: 100% !important;
+}

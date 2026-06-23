@@ -13,6 +13,22 @@ Route::middleware('role')->group(function () {
         })->name('dashboard');
 
         Route::prefix('admin')->name('admin.')->group(function () {
+            Route::prefix('role')->name('role.')->group(function () {
+                Route::prefix('route')->name('route.')->group(function () {
+                    Route::get('/', [AdminController::class, 'roleRouteIndex'])->name('index');
+                    Route::get('/list', [AdminController::class, 'roleRouteList'])->name('list');
+                    Route::get('/{id?}', [AdminController::class, 'roleRouteInfo'])->name('info');
+                    Route::post('/store', [AdminController::class, 'roleRouteStore'])->name('store');
+                    Route::delete('/delete', [AdminController::class, 'roleRouteDelete'])->name('delete');
+                });
+
+                Route::get('/', [AdminController::class, 'roleIndex'])->name('index');
+                Route::get('/list', [AdminController::class, 'roleList'])->name('list');
+                Route::get('/{id?}', [AdminController::class, 'roleInfo'])->name('info');
+                Route::post('/store', [AdminController::class, 'roleStore'])->name('store');
+                Route::delete('/delete', [AdminController::class, 'roleDelete'])->name('delete');
+            });
+
             Route::get('/', [AdminController::class, 'index'])->name('index');
             Route::get('/list', [AdminController::class, 'list'])->name('list');
             Route::get('/view/{id?}', [AdminController::class, 'view'])->name('view');
@@ -20,17 +36,6 @@ Route::middleware('role')->group(function () {
             Route::delete('/delete', [AdminController::class, 'delete'])->name('delete');
             Route::patch('/active', [AdminController::class, 'updateActive'])->name('updateActive');
 
-            Route::prefix('role')->name('role.')->group(function () {
-                Route::get('/', [AdminController::class, 'roleIndex'])->name('index');
-                Route::get('/list', [AdminController::class, 'roleList'])->name('list');
-                Route::get('/{id?}', [AdminController::class, 'roleInfo'])->name('info');
-                Route::post('/store', [AdminController::class, 'roleStore'])->name('store');
-                Route::delete('/delete', [AdminController::class, 'roleDelete'])->name('delete');
-
-                Route::prefix('route')->name('route.')->group(function () {
-                    Route::get('/', [AdminController::class, 'index'])->name('index');
-                });
-            });
         });
 
         Route::prefix('settings')->name('settings.')->group(function () {

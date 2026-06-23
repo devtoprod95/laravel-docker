@@ -24,7 +24,7 @@ enum Menu: string
                     [
                         'name' => '권한 관리', 'pattern' => 'admin.role*', 'children' => [
                             ['name' => '권한 목록', 'route' => 'admin.role.index', 'pattern' => 'admin.role.index*'],
-                            ['name' => '권한 라우팅 목록', 'route' => 'admin.role.route.index', 'pattern' => 'admin.role.route.index*'],
+                            ['name' => '페이지 권한 목록', 'route' => 'admin.role.route.index', 'pattern' => 'admin.role.route.index*'],
                         ]
                     ],
                 ]
