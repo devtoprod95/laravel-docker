@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Dtos\AdminListRequestDto;
 use App\Dtos\AdminRoleListRequestDto;
+use App\Dtos\AdminRoleStoreRequestDto;
 use App\Dtos\AdminStoreRequestDto;
 use App\Models\Admin;
 use App\Models\Role;
@@ -186,6 +187,34 @@ class AdminService
             foreach ($objs as $obj) {
                 $obj->delete();
             }
+
+            $returnMsg = helpersSuccessMessage();
+        } catch (\Throwable $th) {
+            $returnMsg = helpersFailMessage($th->getMessage());
+        }
+
+        return $returnMsg;
+    }
+
+    public function roleStore(AdminRoleStoreRequestDto $dto): array
+    {
+        $returnMsg = $this->returnMsg;
+
+        try {
+            $exists = Role::where('display_name', $dto->displayName)->exists();
+            if( $exists ){
+                throw new Exception('이미 사용중인 권한명이 있습니다.');
+            }
+
+            $exists = Role::where('name', $dto->name)->exists();
+            if( $exists ){
+                throw new Exception('이미 사용중인 권한값이 있습니다.');
+            }
+
+            $obj               = new Role();
+            $obj->display_name = $dto->displayName;
+            $obj->name         = $dto->name;
+            $obj->save();
 
             $returnMsg = helpersSuccessMessage();
         } catch (\Throwable $th) {

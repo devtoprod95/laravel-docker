@@ -12,12 +12,12 @@ class Role extends Model
     protected $hidden   = [];
     protected $guarded  = [];
 
-    protected function casts(): array
-    {
-        return [
-            'name' => EnumsRole::class,
-        ];
-    }
+    // protected function casts(): array
+    // {
+    //     return [
+    //         'name' => EnumsRole::class,
+    //     ];
+    // }
 
     public function admins()
     {

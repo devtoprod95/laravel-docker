@@ -74,7 +74,7 @@
                     <button type="button" class="btn btn-danger btn-remove">
                         <i class="ti ti-trash me-1"></i> 삭제
                     </button>
-                    <button type="button" class="btn btn-success">
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createPermissionModal">
                         <i class="ti ti-plus me-1"></i> 권한 생성
                     </button>
                 </div>
@@ -98,12 +98,88 @@
         </div>
     </div>
 
+    <div class="modal modal-blur fade" id="createPermissionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">권한 생성</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="permissionForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="permissionName" class="form-label">권한명</label>
+                            <input type="text" class="form-control" id="permissionName" placeholder="예: 테스트관리자" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="permissionValue" class="form-label">권한값(영문만)</label>
+                            <input type="text" class="form-control" id="permissionValue" placeholder="예: testAdmin" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary btn-role-save">저장</button>
+                    </div>
+                </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
     $(document).ready(function(){
         var table;
         const apiUrl = "{{ route('admin.role.list') }}";
+
+        $('.btn-role-save').click(async function(){
+            const koreanEnglishRegex = /^[a-zA-Z가-힣]+$/; // 영문+한글 허용
+            const englishOnlyRegex = /^[a-zA-Z]+$/;        // 영문만 허용
+
+            let display_name = $('#permissionName').val().trim();
+            let name = $('#permissionValue').val().trim();
+
+            if (!display_name) {
+                await salert({text: '권한명을 입력해주세요.', cancel: false});
+                return false;
+            }
+            if (!koreanEnglishRegex.test(display_name)) {
+                await salert({text: '권한명은 한글과 영문만 입력 가능합니다.', cancel: false});
+                return false;
+            }
+            if (!name) {
+                await salert({text: '권한값을 입력해주세요.', cancel: false});
+                return false;
+            }
+            if (!englishOnlyRegex.test(name)) {
+                await salert({text: '권한값은 영문만 입력 가능합니다.', cancel: false});
+                return false;
+            }
+
+            if(await salert({text: `권한을 생성하시겠습니까?`})){
+                $.ajax({
+                    url: "{{ route('admin.role.store') }}",
+                    type: 'POST',
+                    data: {
+                        display_name,
+                        name
+                    },
+                    success: function(res) {
+                        alert(res?.msg);
+                        if (res?.status === 200) {
+                            $('#createPermissionModal').modal('hide');
+                            table.setData();
+                        }
+                    },
+                    error: function(xhr) {
+                        var res = xhr?.responseJSON;
+                        alert(res?.error?.message ?? '오류가 발생했습니다.');
+                    }
+                });
+            }
+
+        });
 
         $('.btn-remove').click(async function(){
             let selectList = getSelectedIds();
@@ -148,7 +224,7 @@
 
                     if (routes && routes.length > 0) {
                         $.each(routes, function(i, item) {
-                            html += `<span class="badge bg-blue text-blue-fg">${item.route_name}</span>`;
+                            html += `<span class="badge bg-red text-red-fg">${item.route_name}</span>`;
                         });
                     } else {
                         html = '<p class="text-muted">접근 제한된 라우트가 없습니다.</p>';
@@ -211,7 +287,7 @@
                             // 3. 버튼 생성
                             var $btn = $('<button>', {
                                 type: 'button',
-                                class: 'btn btn-sm btn-outline-primary w-auto',
+                                class: 'btn btn-sm btn-outline-red w-auto',
                                 text: '확인 (' + count + ')',
                                 click: function() {
                                     openDeniedRoutesModal(rowData.id);
@@ -245,14 +321,6 @@
                         formatter: function(cell, formatterParams, onRendered) {
                             var $container = $("<div>").addClass("d-flex flex-column align-items-center gap-1 py-1");
 
-                            var $editBtn = $("<button>")
-                                .addClass("btn btn-sm btn-primary w-100") // w-100으로 너비 통일
-                                .text("수정")
-                                .on("click", function() {
-                                    var data = cell.getRow().getData();
-                                    location.href = "{{ route('admin.view') }}/" + data.id;
-                                });
-
                             // 삭제 버튼 (btn-danger, btn-sm)
                             var $deleteBtn = $("<button>")
                                 .addClass("btn btn-sm btn-danger w-100")
@@ -264,7 +332,7 @@
                                     }
                                 });
 
-                            return $container.append($editBtn, $deleteBtn).get(0);
+                            return $container.append($deleteBtn).get(0);
                         }
                     }
                 ],

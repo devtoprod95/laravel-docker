@@ -24,7 +24,8 @@ Route::middleware('role')->group(function () {
                 Route::get('/', [AdminController::class, 'roleIndex'])->name('index');
                 Route::get('/list', [AdminController::class, 'roleList'])->name('list');
                 Route::get('/{id?}', [AdminController::class, 'roleInfo'])->name('info');
-                Route::delete('/delete', [AdminController::class, 'droleDeleteelete'])->name('delete');
+                Route::post('/store', [AdminController::class, 'roleStore'])->name('store');
+                Route::delete('/delete', [AdminController::class, 'roleDelete'])->name('delete');
 
                 Route::prefix('route')->name('route.')->group(function () {
                     Route::get('/', [AdminController::class, 'index'])->name('index');

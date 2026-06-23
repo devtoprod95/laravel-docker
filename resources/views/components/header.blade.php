@@ -19,7 +19,7 @@
                                 <div>{{ auth('admin')->user()->name }}</div>
                                 <div class="mt-1 small text-muted">
                                     @foreach(auth('admin')->user()->roles as $role)
-                                        {{ $role->name->label() }}
+                                        {{ $role->display_name }}
                                         @if(!$loop->last) |
                                         @endif
                                     @endforeach

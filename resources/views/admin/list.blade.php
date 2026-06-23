@@ -178,7 +178,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                    <button type="button" class="btn btn-primary ms-auto btn-active-save">적용하기</button>
+                    <button type="button" class="btn btn-primary btn-active-save">적용하기</button>
                 </div>
             </div>
         </div>
