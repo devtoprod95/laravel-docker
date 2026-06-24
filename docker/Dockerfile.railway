@@ -30,7 +30,7 @@ COPY docker/motd-railway.sh /etc/profile.d/motd.sh
 
 RUN chmod +x /etc/profile.d/motd.sh && \
     echo 'source /etc/profile.d/motd.sh' >> /root/.bashrc && \
-    echo "alias service='supervisorctl'" >> /root/.bashrc
+    echo 'service() { if [ $# -eq 2 ]; then supervisorctl $2 $1; else supervisorctl $@; fi }' >> /root/.bashrc
 
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
