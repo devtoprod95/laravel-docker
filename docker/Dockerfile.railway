@@ -1,0 +1,42 @@
+FROM php:8.3-fpm
+
+ENV TZ=Asia/Seoul
+
+RUN apt-get update && apt-get install -y \
+    build-essential nginx \
+    libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
+    libzip-dev libonig-dev libxml2-dev libssl-dev libpq-dev \
+    zip unzip jpegoptim optipng pngquant gifsicle \
+    vim git curl tzdata && \
+    docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install pdo_mysql pdo_pgsql pgsql mbstring zip exif pcntl bcmath gd && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
+    echo "date.timezone = Asia/Seoul" > /usr/local/etc/php/conf.d/timezone.ini
+
+RUN pecl install redis && docker-php-ext-enable redis
+
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+COPY . .
+
+# 기존 php.ini 활용
+COPY docker/php.ini /usr/local/etc/php/php.ini
+
+# Railway용 nginx conf 적용
+COPY docker/default-railway.conf /etc/nginx/conf.d/default.conf
+
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+EXPOSE 8080
+
+CMD php artisan migrate --force \
+    && php artisan config:cache \
+    && php artisan route:cache \
+    && php-fpm -D \
+    && nginx -g 'daemon off;'
