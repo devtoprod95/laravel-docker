@@ -6,7 +6,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 
-class RoleRouteStoreRequest extends FormRequest
+class RoleRouteUpdateRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -16,7 +16,7 @@ class RoleRouteStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'route'      => 'required|string|max:100',
+            'id'         => 'required|integer',
             'route_name' => 'required|string|max:100',
             'roles'      => 'required|array',
             'roles.*'    => 'integer',
@@ -39,7 +39,7 @@ class RoleRouteStoreRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'route'      => '적용 페이지',
+            'id'         => '적용 페이지 ID',
             'route_name' => '페이지명',
             'roles'      => '접근 불가 권한',
         ];

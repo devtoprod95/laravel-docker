@@ -6,12 +6,14 @@ use App\Dtos\AdminListRequestDto;
 use App\Dtos\AdminRoleListRequestDto;
 use App\Dtos\AdminRoleRouteListRequestDto;
 use App\Dtos\AdminRoleRouteStoreRequestDto;
+use App\Dtos\AdminRoleRouteUpdateRequestDto;
 use App\Dtos\AdminRoleStoreRequestDto;
 use App\Dtos\AdminStoreRequestDto;
 use App\Enums\Admin;
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\RoleRouteStoreRequest;
+use App\Http\Requests\Admin\RoleRouteUpdateRequest;
 use App\Http\Requests\Admin\RoleStoreRequest;
 use App\Http\Requests\Admin\StoreRequest;
 use App\Models\Admin as ModelsAdmin;
@@ -279,7 +281,6 @@ class AdminController extends Controller
             'routeList'   => routeList(),
             'roles'       => ModelsRole::get(),
         ];
-
         return view('admin.roleRouteList', $params);
     }
 
@@ -346,6 +347,15 @@ class AdminController extends Controller
         $validated = (object) $request->validated();
         $dto       = new AdminRoleRouteStoreRequestDto($validated);
         $result    = $this->adminService->roleRouteStore($dto);
+
+        return apiRes(($result['isSuccess'] === true ? Response::HTTP_OK : Response::HTTP_INTERNAL_SERVER_ERROR), $result);
+    }
+
+    public function roleRouteUpdate(RoleRouteUpdateRequest $request): JsonResponse
+    {
+        $validated = (object) $request->validated();
+        $dto       = new AdminRoleRouteUpdateRequestDto($validated);
+        $result    = $this->adminService->roleRouteUpdate($dto);
 
         return apiRes(($result['isSuccess'] === true ? Response::HTTP_OK : Response::HTTP_INTERNAL_SERVER_ERROR), $result);
     }

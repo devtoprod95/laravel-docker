@@ -118,6 +118,40 @@
         </div>
     </div>
 
+    <div class="modal modal-blur fade" id="deniedRoutesModiModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">페이지 권한 수정</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">적용 페이지</label>
+                        <select class="form-select" id="routeSelectModi" disabled>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pageName" class="form-label">페이지명</label>
+                        <input type="text" class="form-control" id="pageNameModi" placeholder="예: 페이지 권한 목록" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">접근 불가 권한</label>
+                        <select class="form-select choices-select-modi" id="roleSelectModi" multiple>
+                            @foreach($roles as $role)
+                                <option value="{{ $role->id }}">{{ $role->display_name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary btn-role-modi">수정</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -125,18 +159,69 @@
         var table;
         const apiUrl = "{{ route('admin.role.route.list') }}";
 
-        const commonOptions = {
-            removeItemButton: true,
-            searchEnabled: true,
-            duplicateItemsAllowed: false,
-            noResultsText: '검색 결과가 없습니다.',
-            noChoicesText: '선택할 항목이 없습니다.',
-            itemSelectText: '선택하려면 클릭하세요.',
-            placeholderValue: '검색하거나 선택하세요.',
-        };
-        $('.choices-select').each(function() {
-            const element = this;
-            $(element).data('choices', new Choices(element, commonOptions));
+        // 초기 로딩
+        initTable();
+        initChoices();
+
+        function initChoices(selector = '.choices-select') {
+            const commonOptions = {
+                removeItemButton: true,
+                searchEnabled: true,
+                duplicateItemsAllowed: false,
+                noResultsText: '검색 결과가 없습니다.',
+                noChoicesText: '선택할 항목이 없습니다.',
+                itemSelectText: '선택하려면 클릭하세요.',
+                placeholderValue: '검색하거나 선택하세요.',
+                classNames: {
+                    listItems: ['choices__list--multiple', 'danger'],
+                },
+            };
+
+            $(selector).each(function() {
+                const $el = $(this);
+                if (!$el.data('choices')) {
+                    $el.data('choices', new Choices(this, commonOptions));
+                }
+            });
+        }
+
+        $('.btn-role-modi').click(async function(){
+            let   id            = $('#routeSelectModi').data('id');
+            let   route_name    = $('#pageNameModi').val().trim();
+            const roleChoices   = $('#roleSelectModi').data('choices');
+            const selectedRoles = roleChoices.getValue(true);
+
+            if( !route_name ){
+                await salert({text: '페이지명을 선택해주세요.', cancel: false});
+                return false;
+            }
+            if( selectedRoles.length < 1 ){
+                await salert({text: '접근 불가 권한을 최소 1개 선택해주세요.', cancel: false});
+                return false;
+            }
+
+            if(await salert({text: `선택한 권한들에 대해 지정된 페이지의 접근을 차단하시겠습니까?`})){
+                $.ajax({
+                    url: "{{ route('admin.role.route.update') }}",
+                    type: 'PATCH',
+                    data: {
+                        id,
+                        route_name,
+                        roles: selectedRoles
+                    },
+                    success: function(res) {
+                        alert(res?.msg);
+                        if (res?.status === 200) {
+                            $('#deniedRoutesModiModal').modal('hide');
+                            table.setData();
+                        }
+                    },
+                    error: function(xhr) {
+                        var res = xhr?.responseJSON;
+                        alert(res?.error?.message ?? '오류가 발생했습니다.');
+                    }
+                });
+            }
         });
 
         $('.btn-role-save').click(async function(){
@@ -247,6 +332,42 @@
             });
         }
 
+        function openDeniedRoutesModiModal(id) {
+            var $modal = $('#deniedRoutesModiModal').modal('show');
+
+            $.ajax({
+                url: "{{ route('admin.role.route.info') }}" + `/${id}`,
+                type: 'GET',
+                success: function(res) {
+                    var data = res?.data;
+                    var roles = data?.roles;
+
+                    $('#routeSelectModi').attr('data-id', `${data.id}`);
+                    $('#routeSelectModi').html(`<option value=${data.route}>${data.route_url}</option>`);
+                    $('#pageNameModi').val(`${data.route_name}`);
+
+                    initChoices('#roleSelectModi');
+                    const choicesInstance = $('#roleSelectModi').data('choices');
+                    if (roles && roles.length > 0 && choicesInstance) {
+                        choicesInstance.removeActiveItems();
+
+                        const valuesToSelect = roles.map(function(item) {
+                            return String(item.id);
+                        });
+
+                        valuesToSelect.forEach(function(value) {
+                            choicesInstance.setChoiceByValue(value);
+                        });
+                    }
+                    $modal.modal('show');
+                },
+                error: function(xhr) {
+                    var res = xhr?.responseJSON;
+                    alert(res?.error?.message ?? '오류가 발생했습니다.');
+                }
+            });
+        }
+
         function initTable(params = {}) {
             table = new Tabulator("#example-table", {
                 ajaxURL: apiUrl,
@@ -337,7 +458,14 @@
                         formatter: function(cell, formatterParams, onRendered) {
                             var $container = $("<div>").addClass("d-flex flex-column align-items-center gap-1 py-1");
 
-                            // 삭제 버튼 (btn-danger, btn-sm)
+                            var $editBtn = $("<button>")
+                                .addClass("btn btn-sm btn-primary w-100") // w-100으로 너비 통일
+                                .text("수정")
+                                .on("click", function() {
+                                    var data = cell.getRow().getData();
+                                    openDeniedRoutesModiModal(data.id);
+                                });
+
                             var $deleteBtn = $("<button>")
                                 .addClass("btn btn-sm btn-danger w-100")
                                 .text("삭제")
@@ -348,15 +476,12 @@
                                     }
                                 });
 
-                            return $container.append($deleteBtn).get(0);
+                            return $container.append($editBtn, $deleteBtn).get(0);
                         }
                     }
                 ],
             });
         }
-
-        // 초기 로딩
-        initTable();
 
         function getSelectedIds() {
             let selectedRows = table.getSelectedRows();

@@ -97,3 +97,9 @@ html {
 .choices__input {
     width: 100% !important;
 }
+
+.choices__list--multiple.danger .choices__item {
+    background-color: var(--tblr-danger) !important;
+    border-color: var(--tblr-danger) !important;
+    color: #ffffff !important;
+}

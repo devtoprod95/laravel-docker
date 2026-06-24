@@ -20,6 +20,7 @@ Route::middleware('role')->group(function () {
                     Route::get('/{id?}', [AdminController::class, 'roleRouteInfo'])->name('info');
                     Route::post('/store', [AdminController::class, 'roleRouteStore'])->name('store');
                     Route::delete('/delete', [AdminController::class, 'roleRouteDelete'])->name('delete');
+                    Route::patch('/update', [AdminController::class, 'roleRouteUpdate'])->name('update');
                 });
 
                 Route::get('/', [AdminController::class, 'roleIndex'])->name('index');

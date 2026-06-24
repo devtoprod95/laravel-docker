@@ -6,6 +6,7 @@ use App\Dtos\AdminListRequestDto;
 use App\Dtos\AdminRoleListRequestDto;
 use App\Dtos\AdminRoleRouteListRequestDto;
 use App\Dtos\AdminRoleRouteStoreRequestDto;
+use App\Dtos\AdminRoleRouteUpdateRequestDto;
 use App\Dtos\AdminRoleStoreRequestDto;
 use App\Dtos\AdminStoreRequestDto;
 use App\Models\Admin;
@@ -300,6 +301,36 @@ class AdminService
                 'route_name' => $dto->routeName
             ]);
             $deniedRoute->roles()->attach($dto->roles);
+
+            $returnMsg = helpersSuccessMessage();
+        } catch (\Throwable $th) {
+            $returnMsg = helpersFailMessage($th->getMessage());
+        }
+
+        return $returnMsg;
+    }
+
+    public function roleRouteUpdate(AdminRoleRouteUpdateRequestDto $dto): array
+    {
+        $returnMsg = $this->returnMsg;
+
+        try {
+            $obj = DeniedRoute::where('id', $dto->id)->first();
+            if( $obj === null ){
+                throw new Exception('empty DeniedRoute');
+            }
+
+            $exists = DeniedRoute::where('route', $obj->route)->where('id', '!=', $dto->id)->exists();
+            if( $exists ){
+                throw new Exception('이미 등록된 페이지입니다.');
+            }
+            if (!Route::has($obj->route)) {
+                throw new Exception('존재하지 않는 페이지입니다: ' . $dto->route);
+            }
+
+            $obj->route_name = $dto->routeName;
+            $obj->save();
+            $obj->roles()->sync($dto->roles);
 
             $returnMsg = helpersSuccessMessage();
         } catch (\Throwable $th) {

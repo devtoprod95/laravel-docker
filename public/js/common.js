@@ -10,6 +10,34 @@ window.salert = async function(options = {}) {
         cancelButtonColor: '#d33',
         confirmButtonText: '확인',
         cancelButtonText: '취소',
+        allowEnterKey: true,
+        allowEscapeKey: true,
+         didOpen: () => {
+            // swal 열려있는 동안 모달 닫힘 방지
+            $('.modal').on('hide.bs.modal.swal', function(e) {
+                if (Swal.isVisible()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            });
+            // 키 이벤트 처리
+            $(document).on('keydown.swal', function(e) {
+                if (e.key === 'Escape') {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                    Swal.clickCancel();
+                }
+                if (e.key === 'Enter') {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                    Swal.clickConfirm();
+                }
+            });
+        },
+        willClose: () => {
+            $(document).off('keydown.swal');
+            $('.modal').off('hide.bs.modal.swal');
+        },
         timer: options.timer || 0, // 후에 자동으로 닫힘
         timerProgressBar: options.timer || false // 진행률 바를 보여주어 남은 시간을 시각화
     });
