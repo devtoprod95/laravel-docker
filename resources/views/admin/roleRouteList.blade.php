@@ -270,7 +270,17 @@
                             var page = table.getPage();
                             var pageSize = table.getPageSize();
                             var rowIndex = cell.getRow().getPosition();
-                            return total - ((page - 1) * pageSize) - rowIndex + 1;
+
+                            // 현재 정렬 상태 확인
+                            var sorters = table.getSorters();
+                            var idSorter = sorters.find(s => s.field === "id");
+                            var isAsc = idSorter && idSorter.dir === "asc";
+
+                            if (isAsc) {
+                                return (page - 1) * pageSize + rowIndex;
+                            } else {
+                                return total - ((page - 1) * pageSize) - rowIndex + 1;
+                            }
                         }
                     },
                     { title: "페이지 명", field: "route_name", headerSort: true, headerMenu: window.tabulatorHeaderMenu },
