@@ -2,15 +2,14 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('role')->group(function () {
     Route::middleware('admin:login')->group(function () {
         Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-
-        Route::get('/dashboard', function () {
-            return view('dashboard');
-        })->name('dashboard');
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::delete('/dashboard/log', [DashboardController::class, 'deleteLog'])->name('dashboard.log.delete');
 
         Route::prefix('admin')->name('admin.')->group(function () {
             Route::prefix('role')->name('role.')->group(function () {
