@@ -3,6 +3,7 @@
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\RoleMiddleware;
 use App\Http\Middleware\TrackAdminActivityMiddleware;
+use App\Http\Middleware\TrackHttpStatusCountsMiddleware;
 use App\Http\Middleware\TrackVisitorMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => AdminMiddleware::class,
         ]);
         $middleware->append(TrackVisitorMiddleware::class);
+        $middleware->append(TrackHttpStatusCountsMiddleware::class);
         $middleware->appendToGroup('web', TrackAdminActivityMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

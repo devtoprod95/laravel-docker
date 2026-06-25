@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\CacheKey;
+use App\Enums\HttpStatus;
 use App\Models\VisitorLog;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -78,5 +79,27 @@ class DashboardService
     {
         Cache::forget(CacheKey::VisitorStats->value);
         return $this->getVisitorStats();
+    }
+
+    public function getHttpStatusStats(): array
+    {
+        $key       = CacheKey::HTTP_STATUS_COUNTS->forToday();
+        $rawCounts = Redis::hgetall($key);                      // ['200' => '1842', '404' => '23', ...]
+
+        $stats  = [];
+        $labels = [];
+
+        // Redis에 저장된 데이터 기준으로 순회
+        foreach ($rawCounts as $code => $count) {
+            $statusCode = (int) $code;
+            $stats[$statusCode] = (int) $count;
+
+            $labels[$statusCode] = HttpStatus::tryFrom($statusCode)?->label() ?? 'Unknown';
+        }
+
+        return [
+            'httpStats'        => $stats,
+            'httpStatusLabels' => $labels,
+        ];
     }
 }

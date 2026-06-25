@@ -27,8 +27,8 @@ class DashboardController extends Controller
 
     public function index(): View
     {
-
-        $params = [
+        $httpStatsArr = $this->dashboardService->getHttpStatusStats();
+        $params       = [
             'stats'       => $this->dashboardService->getVisitorStats(),
             'onlineUsers' => $this->dashboardService->getOnlineUsers(),
             'schedules'   => $this->getSchedules(),
@@ -51,11 +51,11 @@ class DashboardController extends Controller
                 'laravel_version' => app()->version(),
                 'os'              => php_uname('s'),
             ],
-            'httpStats'        => [200 => 1842, 404 => 23, 500 => 4],
-            'httpStatusLabels' => [200 => 'OK', 404 => 'Not Found', 500 => 'Server Error'],
+            'httpStats'        => $httpStatsArr['httpStats'],
+            'httpStatusLabels' => $httpStatsArr['httpStatusLabels'],
             'logs'             => $this->getLogs(),
         ];
-        // dd($params['logs']);
+
         return view('dashboard', $params);
     }
 
@@ -124,4 +124,5 @@ class DashboardController extends Controller
 
         return apiRes(Response::HTTP_OK, helpersSuccessMessage());
     }
+
 }
