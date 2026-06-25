@@ -246,7 +246,9 @@ const tabulatorSettings = {
         return response;
     },
 };
-Object.assign(Tabulator.defaultOptions, tabulatorSettings);
+if (typeof Tabulator !== 'undefined') {
+    Object.assign(Tabulator.defaultOptions, tabulatorSettings);
+}
 
 window.tabulatorHeaderMenu = function() {
     var menu = [];

@@ -1,7 +1,10 @@
 @extends('layouts.auth')
 
 @section('content')
-<div class="card card-md shadow-lg border-0"> <div class="card-body p-5"> <h2 class="h2 text-center mb-4 fw-bold">관리자 페이지에 오신 것을 환영합니다</h2>
+<div class="card card-md shadow-lg border-0">
+    <div class="card-body p-5">
+        <h2 class="h2 text-center mb-4 fw-bold">관리자 페이지에 오신 것을 환영합니다</h2>
+
         <p class="text-center text-muted mb-4">계정을 사용하여 로그인하세요.</p>
 
         @if($errors->any())
