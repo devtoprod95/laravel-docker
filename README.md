@@ -1,4 +1,4 @@
-# MyApp — Laravel Admin Starter (Tabler UI)
+# BasePlate — Laravel Admin Starter (Tabler UI)
 
 Laravel 13 기반의 **관리자 전용 페이지 데모 프로젝트**입니다.
 프론트엔드는 [Tabler](https://tabler.io/) 템플릿을 Blade 뷰로 구성했으며, 새 프로젝트를 시작할 때 바로 이어서 작업할 수 있도록 관리자 페이지의 기본 레이아웃(헤더, 사이드 네비게이션, 인증 등)을 미리 구축해 둔 **초기 셋팅용 보일러플레이트**입니다.
@@ -12,7 +12,7 @@ Laravel 13 기반의 **관리자 전용 페이지 데모 프로젝트**입니다
 - **Laravel 13** 기반, View는 전부 **Blade**로 작성
 - **Tabler** 어드민 템플릿 적용 (헤더 / 사이드바 / 카드 / 테이블 등 공통 레이아웃 포함)
 - 관리자 **로그인/인증 기능 포함**
-- **Docker / Docker Compose**로 로컬 구동 가능 (PHP-FPM + Nginx + Redis)
+- **Docker**로 로컬 및 Railway 배포 모두 대응
 - **MySQL / PostgreSQL 둘 다 지원** (드라이버 빌트인, `.env` 설정만 변경하면 전환 가능)
 - 아이콘 라이브러리 등 관리자 화면에서 바로 활용 가능한 UI 리소스 포함
 
@@ -21,11 +21,9 @@ Laravel 13 기반의 **관리자 전용 페이지 데모 프로젝트**입니다
 ## 샘플 화면
 <img width="1664" height="934" alt="스크린샷 2026-06-19 151005" src="https://github.com/user-attachments/assets/f9a68fb7-4ea0-4d3e-a1d6-91358f4c66b5" />
 <img width="1744" height="894" alt="스크린샷 2026-06-19 152211" src="https://github.com/user-attachments/assets/ea19a0ed-742b-4215-b0bf-ab42b517510a" />
-<img width="1702" height="965" alt="스크린샷 2026-06-19 152200" src="https://github.com/user-attachments/assets/f7166706-861b-40da-9e3f-ab303bdbe287" />
+<img width="1702" height="965" alt="스크린샷 2026-06-19 152200" src="https://github.com/user-attachments/assets/f7166706-851b-40da-9e3f-ab303bdbe287" />
 <img width="1654" height="918" alt="스크린샷 2026-06-19 152145" src="https://github.com/user-attachments/assets/85db48ae-76cb-4e1b-ab50-89dd2b165f5e" />
 <img width="1691" height="884" alt="스크린샷 2026-06-19 152223" src="https://github.com/user-attachments/assets/8eb14125-7c02-4a27-ac1c-c61f702fba0d" />
-
-
 
 ---
 
@@ -38,7 +36,8 @@ Laravel 13 기반의 **관리자 전용 페이지 데모 프로젝트**입니다
 | DB | MySQL 또는 PostgreSQL (선택) |
 | Cache / Session | Redis |
 | Web Server | Nginx (Alpine) |
-| 실행 환경 | Docker, Docker Compose |
+| 실행 환경 | Docker |
+| 배포 | Railway |
 
 ---
 
@@ -52,7 +51,7 @@ Laravel 13 기반의 **관리자 전용 페이지 데모 프로젝트**입니다
 │   ├── nginx/conf.d/default.conf
 │   ├── php.ini
 │   └── Dockerfile
-├── docker-compose.yml
+├── docker-compose.yml          # 로컬 개발용
 ├── docker-entrypoint.sh
 ├── .env.example
 └── README.md
@@ -63,9 +62,8 @@ Laravel 13 기반의 **관리자 전용 페이지 데모 프로젝트**입니다
 ## 요구 사항
 
 - Docker / Docker Compose
-- (선택) 로컬에 Git 설치
 
-> PHP, Composer, Node.js 등은 모두 Docker 이미지 내부에 포함되어 있어 **로컬에 별도 설치할 필요가 없습니다.**
+> PHP, Composer 등은 모두 Docker 이미지 내부에 포함되어 있어 **로컬에 별도 설치할 필요가 없습니다.**
 
 ---
 
@@ -74,8 +72,8 @@ Laravel 13 기반의 **관리자 전용 페이지 데모 프로젝트**입니다
 ### 1. 프로젝트 클론
 
 ```bash
-git clone <repository-url> myapp
-cd myapp
+git clone <repository-url> baseplate
+cd baseplate
 ```
 
 ### 2. 환경 변수 설정
@@ -87,7 +85,7 @@ cp .env.example .env
 `.env`에서 아래 항목을 환경에 맞게 수정합니다.
 
 ```env
-APP_NAME=MyApp
+APP_NAME=BasePlate
 APP_ENV=local
 APP_URL=http://localhost:9083
 
@@ -95,8 +93,8 @@ APP_URL=http://localhost:9083
 DB_CONNECTION=mysql
 DB_HOST=mysql        # 또는 postgres (사용하는 DB 서비스명에 맞게)
 DB_PORT=3306         # mysql: 3306 / pgsql: 5432
-DB_DATABASE=myapp
-DB_USERNAME=myapp
+DB_DATABASE=baseplate
+DB_USERNAME=baseplate
 DB_PASSWORD=secret
 
 REDIS_HOST=phpredis
@@ -123,7 +121,6 @@ docker compose exec php83 bash
 composer install
 php artisan key:generate
 php artisan migrate --seed
-npm install && npm run build
 ```
 
 ### 5. 접속 확인
@@ -134,13 +131,20 @@ npm install && npm run build
 http://localhost:9083
 ```
 
-관리자 로그인 페이지가 표시되면 정상 구동된 것입니다. 시드 데이터에 포함된 관리자 계정으로 로그인하세요. (계정 정보는 `database/seeders/` 참고)
+관리자 로그인 페이지가 표시되면 정상 구동된 것입니다.
+
+**테스트 계정**
+
+| 항목 | 값 |
+|---|---|
+| 아이디 | admin |
+| 비밀번호 | 1234 |
 
 ---
 
 ## Docker 구성
 
-### docker-compose.yml
+### 로컬 (docker-compose.yml)
 
 | 서비스 | 설명 | 포트 |
 |---|---|---|
@@ -194,66 +198,26 @@ volumes:
   redis_data:
 ```
 
+### Railway 배포
+
+Railway는 별도 `docker-compose.yml` 없이 **Dockerfile 단독**으로 배포됩니다. Redis와 PostgreSQL은 Railway 서비스로 각각 분리하여 운영합니다.
+
+| Railway 서비스 | 설명 |
+|---|---|
+| `laravel-docker` | PHP 애플리케이션 (Dockerfile 빌드) |
+| `Redis` | 세션 / 캐시용 |
+| `Postgres` | 데이터베이스 |
+
+Railway 환경 변수는 각 서비스의 Variables 탭에서 설정하며, `DATABASE_URL`, `REDIS_URL` 등은 Railway가 자동으로 주입합니다.
+
 ### PHP 컨테이너 (docker/Dockerfile)
 
 - Base: `php:8.3-fpm`
 - 확장 모듈: `pdo_mysql`, `pdo_pgsql`, `pgsql`, `mbstring`, `zip`, `exif`, `pcntl`, `bcmath`, `gd`, `redis`
 - **MySQL / PostgreSQL 드라이버가 모두 설치되어 있어** `.env`의 `DB_CONNECTION` 값만 바꾸면 DB를 전환할 수 있습니다.
-- Node.js 20.x 포함 (Tabler 에셋 빌드용)
 - Composer 포함 (`composer:latest` 이미지에서 바이너리 복사)
 - Timezone: `Asia/Seoul`
 - 컨테이너 내부 `www-data` 사용자를 UID/GID `1000`으로 맞춰 호스트와 파일 권한 충돌 방지
-
-```dockerfile
-FROM php:8.3-fpm
-
-ENV TZ=Asia/Seoul
-
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
-    locales \
-    libzip-dev \
-    libonig-dev \
-    libxml2-dev \
-    libssl-dev \
-    libpq-dev \
-    zip unzip \
-    jpegoptim optipng pngquant gifsicle \
-    vim git curl tzdata supervisor && \
-    docker-php-ext-configure gd --with-freetype --with-jpeg && \
-    docker-php-ext-install pdo_mysql pdo_pgsql pgsql mbstring zip exif pcntl bcmath gd && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
-    echo "date.timezone = Asia/Seoul" > /usr/local/etc/php/conf.d/timezone.ini
-
-RUN pecl install redis && docker-php-ext-enable redis
-
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-COPY docker-entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
-RUN passwd -d root
-WORKDIR /var/www/html
-
-RUN echo "umask 000" >> /root/.bashrc
-
-RUN usermod -u 1000 www-data && \
-    groupmod -g 1000 www-data && \
-    chown -R www-data:www-data /var/www/html
-
-EXPOSE 9000
-ENTRYPOINT ["entrypoint.sh"]
-CMD ["php-fpm"]
-```
 
 ### DB 컨테이너 추가하기 (선택)
 
@@ -268,8 +232,8 @@ CMD ["php-fpm"]
     restart: always
     environment:
       - TZ=Asia/Seoul
-      - MYSQL_DATABASE=myapp
-      - MYSQL_USER=myapp
+      - MYSQL_DATABASE=baseplate
+      - MYSQL_USER=baseplate
       - MYSQL_PASSWORD=secret
       - MYSQL_ROOT_PASSWORD=root
     ports:
@@ -287,8 +251,8 @@ CMD ["php-fpm"]
     restart: always
     environment:
       - TZ=Asia/Seoul
-      - POSTGRES_DB=myapp
-      - POSTGRES_USER=myapp
+      - POSTGRES_DB=baseplate
+      - POSTGRES_USER=baseplate
       - POSTGRES_PASSWORD=secret
     ports:
       - "5432:5432"
@@ -306,7 +270,7 @@ CMD ["php-fpm"]
 
 - **로그인 / 인증**: 관리자 로그인 화면 및 인증 미들웨어 적용
 - **공통 레이아웃**: 상단 헤더(앱 이름, 관리자 정보) + 좌측 사이드 네비게이션(홈 / 대시보드 / 관리자 / 설정)
-- **아이콘 라이브러리 페이지**: Tabler Icons(`ti ti-*`) 204개를 카테고리별(핵심 작업 CRUD, 사용자 및 관리, 시스템 및 설정, 콘텐츠 및 미디어, 통계 및 리포트, 커뮤니케이션, 위치 및 이동, 기타)로 모아 보여주고, 클릭 시 클래스명이 복사되는 내부 도구 페이지 포함 — 화면 개발 시 아이콘을 빠르게 찾고 적용할 수 있도록 도와줍니다.
+- **아이콘 라이브러리 페이지**: Tabler Icons(`ti ti-*`) 204개를 카테고리별로 모아 보여주고, 클릭 시 클래스명이 복사되는 내부 도구 페이지 포함
 
 새로운 화면을 추가할 때는 이 공통 레이아웃(`resources/views/layouts/`)을 `@extends` 하여 콘텐츠 영역만 채우면 됩니다.
 
@@ -327,9 +291,6 @@ docker compose exec php83 php artisan migrate
 # 캐시/설정 초기화
 docker compose exec php83 php artisan optimize:clear
 
-# 프론트엔드 에셋 빌드 (watch)
-docker compose exec php83 npm run dev
-
 # 컨테이너 중지
 docker compose down
 ```
@@ -344,9 +305,10 @@ docker compose down
 | DB 연결 실패 | `.env`의 `DB_CONNECTION`, `DB_HOST`, `DB_PORT`가 실제 추가한 DB 컨테이너 서비스명/포트와 일치하는지 확인 |
 | 포트 충돌 | `.env`의 `NGINX_PORT`, `REDIS_PORT` 값을 다른 포트로 변경 후 `docker compose up -d` 재실행 |
 | Redis 연결 실패 | `phpredis` 컨테이너가 정상 기동했는지 `docker compose ps`로 확인 |
+| Railway 배포 후 500 에러 | Railway Variables에서 `APP_KEY`, `DB_*`, `REDIS_*` 환경 변수가 올바르게 설정되어 있는지 확인 |
 
 ---
 
 ## 라이선스
 
-내부/데모 목적의 보일러플레이트 프로젝트입니다. (라이선스 정책에 맞게 본 섹션을 수정하세요)
+내부/데모 목적의 보일러플레이트 프로젝트입니다.

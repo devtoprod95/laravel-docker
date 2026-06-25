@@ -5,9 +5,9 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <a href="/" class="navbar-brand navbar-brand-autodark d-flex align-items-center gap-1">
-                <img src="https://www.svgrepo.com/show/510437/logo-ladspa.svg" width="100" style="object-fit: contain; max-height: 40px;">
-                <span class="fw-bold">MyApp</span>
+            <a href="/" class="navbar-brand navbar-brand-autodark d-flex align-items-center gap-2">
+                <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="logo" style="height: 32px; width: 32px; object-fit: contain;">
+                <span class="fw-bold fs-3">{{ env('APP_NAME') }}</span>
             </a>
 
             @if( !empty(auth('admin')->user()) )
