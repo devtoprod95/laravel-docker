@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Services\VisitorStatsService;
+use App\Services\DashboardService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -12,7 +12,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(VisitorStatsService::class);
+        $this->app->singleton(DashboardService::class);
     }
 
     /**

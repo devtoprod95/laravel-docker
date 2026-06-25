@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Services\VisitorStatsService;
+use App\Services\DashboardService;
 use Cron\CronExpression;
 use Illuminate\Http\Request;
 use Illuminate\Console\Scheduling\Schedule;
@@ -17,7 +17,7 @@ class DashboardController extends Controller
 
     public function __construct(
         Request $request,
-        private VisitorStatsService $visitorStats
+        private DashboardService $dashboardService
     )
     {
         $this->request = $request;
@@ -25,13 +25,12 @@ class DashboardController extends Controller
 
     public function index(): View
     {
+
         $params = [
-            'stats' => $this->visitorStats->getStats(),
-            'onlineUsers' => [
-                ['name' => '홍길동', 'current_page' => '/orders', 'last_active_at' => '방금 전'],
-            ],
-            'schedules' => $this->getSchedules(),
-            'server'    => [
+            'stats'       => $this->dashboardService->getVisitorStats(),
+            'onlineUsers' => $this->dashboardService->getOnlineUsers(),
+            'schedules'   => $this->getSchedules(),
+            'server'      => [
                 'memory_used'  => (int) shell_exec("awk '/MemTotal/{t=$2} /MemAvailable/{a=$2} END{printf \"%d\", (t-a)/1024}' /proc/meminfo"),
                 'memory_total' => (int) shell_exec("awk '/MemTotal/{printf \"%d\", $2/1024}' /proc/meminfo"),
                 'cpu_usage'    => min(round(sys_getloadavg()[0] / max(1, (int) shell_exec("grep -c ^processor /proc/cpuinfo")) * 100), 100),

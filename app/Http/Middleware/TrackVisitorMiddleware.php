@@ -31,28 +31,37 @@ class TrackVisitorMiddleware
 
     private function recordVisit(Request $request): void
     {
-        $ip    = $request->ip();
+        $ip    = $this->getClientIp($request);
         $today = now()->toDateString();
 
-        // Redis에 오늘 이 IP가 방문했는지 체크
         $cacheKey = "visitor_ip:{$today}:{$ip}";
 
         if (Cache::has($cacheKey)) {
-            return; // 오늘 이미 방문한 IP → 스킵
+            return;
         }
 
-        // Redis에 기록 (자정까지 유지)
         Cache::put($cacheKey, true, now()->endOfDay());
 
-        // DB에 저장
         VisitorLog::create([
             'ip'         => $ip,
             'user_agent' => $request->userAgent(),
             'visited_at' => $today,
         ]);
 
-        // 통계 캐시 무효화 (다음 조회 시 갱신되도록)
         Cache::forget(CacheKey::VisitorStats->value);
+    }
+
+    private function getClientIp(Request $request): string
+    {
+        $forwardedFor = $request->header('X-Forwarded-For');
+        if ($forwardedFor) {
+            $ip = trim(explode(',', $forwardedFor)[0] ?? '');
+            if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                return $ip;
+            }
+        }
+
+        return $request->ip();
     }
 
     private function isBot(Request $request): bool
