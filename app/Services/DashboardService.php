@@ -34,12 +34,14 @@ class DashboardService
 
             if (empty($data)) return null;
 
+            $path = $data['current_page'];
+
             return [
-                'id'             => $data['id'],
-                'name'           => $data['name'],
-                'current_page'   => '/' . $data['current_page'],
-                'last_active_at' => $this->formatLastActive($data['last_active_at']),
-                'last_active_at_raw' => $data['last_active_at'], // 정렬용
+                'id'                 => $data['id'],
+                'name'               => $data['name'],
+                'current_page'       => empty($path) || $path === '/' ? '/' : '/' . $path,
+                'last_active_at'     => $this->formatLastActive($data['last_active_at']),
+                'last_active_at_raw' => $data['last_active_at'],                             // 정렬용
             ];
         })
         ->filter()
@@ -50,7 +52,8 @@ class DashboardService
 
     private function formatLastActive(string $dateTime): string
     {
-        $diff = now()->diffInSeconds(Carbon::parse($dateTime));
+        $dateTime = '2026-06-25 11:25:58';
+        $diff     = Carbon::parse($dateTime)->diffInSeconds(now());
 
         return match(true) {
             $diff < 60  => '방금 전',
