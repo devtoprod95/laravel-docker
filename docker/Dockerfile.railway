@@ -34,10 +34,10 @@ RUN chmod +x /etc/profile.d/motd.sh && \
     echo 'source /etc/profile.d/motd.sh' >> /root/.bashrc && \
     echo 'service() { if [ $# -eq 2 ]; then supervisorctl $2 $1; else supervisorctl $@; fi }' >> /root/.bashrc
 
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev --no-scripts
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 8080
 
-CMD supervisord -c /etc/supervisor/conf.d/supervisord.conf
+CMD php artisan package:discover --ansi && supervisord -c /etc/supervisor/conf.d/supervisord.conf
