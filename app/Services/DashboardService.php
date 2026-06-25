@@ -52,8 +52,7 @@ class DashboardService
 
     private function formatLastActive(string $dateTime): string
     {
-        $dateTime = '2026-06-25 11:25:58';
-        $diff     = Carbon::parse($dateTime)->diffInSeconds(now());
+        $diff = Carbon::parse($dateTime)->diffInSeconds(now());
 
         return match(true) {
             $diff < 60  => '방금 전',
