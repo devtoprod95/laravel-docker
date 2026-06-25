@@ -118,11 +118,20 @@
                                 <div class="flex-fill">
                                     <div class="fw-medium text-truncate" style="max-width: 140px;">{{ $user['name'] }}</div>
                                     <div class="text-muted small text-truncate" style="max-width: 140px;">{{ $user['current_page'] ?? '-' }}</div>
+                                    <div class="text-muted fs-6">{{ $user['last_active_at_raw'] ?? '' }}</div>
                                 </div>
                                 <div class="ms-auto text-end">
-                                    <span class="text-muted small">{{ $user['last_active_at'] ?? '' }}</span>
+                                    <span class="text-muted small">
+                                        @if(!empty($user['last_active_at']) && $user['last_active_at'] !== 'offline')
+                                            {{ $user['last_active_at'] ?? '' }}
+                                        @endif
+                                    </span>
                                     <div>
-                                        <span class="badge bg-green-lt text-green">접속중</span>
+                                        @if(($user['last_active_at'] ?? '') === 'offline')
+                                            <span class="badge bg-red-lt text-red">오프라인</span>
+                                        @else
+                                            <span class="badge bg-green-lt text-green">접속중</span>
+                                        @endif
                                     </div>
                                 </div>
                             </div>

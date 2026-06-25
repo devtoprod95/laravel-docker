@@ -10,7 +10,7 @@ use Closure;
 
 class TrackAdminActivityMiddleware
 {
-    private const TTL = 300; // 5분
+    private const TTL = 600; // 10분
 
     public function handle(Request $request, Closure $next): Response
     {

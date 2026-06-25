@@ -60,7 +60,8 @@ class DashboardService
             $diff < 180 => '2분 전',
             $diff < 240 => '3분 전',
             $diff < 300 => '4분 전',
-            default     => '5분 전',
+            $diff < 360 => '5분 전',
+            default     => 'offline',
         };
     }
 
