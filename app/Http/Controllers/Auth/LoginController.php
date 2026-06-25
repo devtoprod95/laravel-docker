@@ -21,7 +21,8 @@ class LoginController extends Controller
         $this->request = $request;
     }
 
-    public function show() {
+    public function show()
+    {
         $redirectTo         = $this->request->input('redirectTo');
         $rememberedUsername = Cookie::get('remember_username');
         $rememberedPassword = Cookie::get('remember_password');

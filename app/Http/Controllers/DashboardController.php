@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Services\VisitorStatsService;
 use Cron\CronExpression;
 use Illuminate\Http\Request;
 use Illuminate\Console\Scheduling\Schedule;
@@ -16,6 +17,7 @@ class DashboardController extends Controller
 
     public function __construct(
         Request $request,
+        private VisitorStatsService $visitorStats
     )
     {
         $this->request = $request;
@@ -24,11 +26,7 @@ class DashboardController extends Controller
     public function index(): View
     {
         $params = [
-            'stats' => [
-                'total_visitors'     => 123456,
-                'today_visitors'     => 342,
-                'yesterday_visitors' => 289,
-            ],
+            'stats' => $this->visitorStats->getStats(),
             'onlineUsers' => [
                 ['name' => '홍길동', 'current_page' => '/orders', 'last_active_at' => '방금 전'],
             ],
