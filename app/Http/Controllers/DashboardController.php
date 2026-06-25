@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Services\DashboardService;
+use Carbon\Carbon;
 use Cron\CronExpression;
 use Illuminate\Http\Request;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -34,17 +36,12 @@ class DashboardController extends Controller
                 'memory_used'  => (int) shell_exec("awk '/MemTotal/{t=$2} /MemAvailable/{a=$2} END{printf \"%d\", (t-a)/1024}' /proc/meminfo"),
                 'memory_total' => (int) shell_exec("awk '/MemTotal/{printf \"%d\", $2/1024}' /proc/meminfo"),
                 'cpu_usage'    => min(round(sys_getloadavg()[0] / max(1, (int) shell_exec("grep -c ^processor /proc/cpuinfo")) * 100), 100),
-                'uptime' => (function() {
-                    $stat    = file_get_contents('/proc/1/stat');
-                    $fields  = explode(' ', $stat);
-                    $starttime = (int) $fields[21];
-                    $hertz   = 100; // 일반적으로 100Hz
-                    $uptime  = (int) explode(' ', file_get_contents('/proc/uptime'))[0];
-                    $seconds = (int) ($uptime - ($starttime / $hertz));
-
-                    $days    = floor($seconds / 86400);
-                    $hours   = floor(($seconds % 86400) / 3600);
-                    $minutes = floor(($seconds % 3600) / 60);
+                'uptime'       => (function() {
+                    $startedAt = Carbon::parse(Cache::get('app_started_at', now()));
+                    $seconds   = (int) $startedAt->diffInSeconds(now());
+                    $days      = floor($seconds / 86400);
+                    $hours     = floor(($seconds % 86400) / 3600);
+                    $minutes   = floor(($seconds % 3600) / 60);
 
                     return ($days > 0 ? "{$days}일 " : '') . ($hours > 0 ? "{$hours}시간 " : '') . "{$minutes}분";
                 })(),
