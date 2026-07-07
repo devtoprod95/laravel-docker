@@ -8,10 +8,5 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('inspire')->description('명언 배치 04시')->dailyAt('04:00');
-Schedule::command('inspire')->description('명언 배치 01시')->dailyAt('01:00');
-Schedule::command('inspire')->description('명언 배치 06시')->dailyAt('06:00');
-Schedule::command('inspire')->description('명언 배치 02시')->dailyAt('02:00');
-Schedule::command('inspire')->description('명언 배치 05시')->dailyAt('05:00');
-Schedule::command('inspire')->description('명언 배치 03시')->dailyAt('03:00');
-Schedule::command('inspire')->description('명언 배치 5분마다 실행')->everyFiveMinutes();
+Schedule::command('cron:update_site_statistics')->description('사이트 통계 업데이트')->cron('0 0 * * *');
+Schedule::command('cron:old_visitors_delete')->description('7일 전 방문자 삭제')->cron('5 0 * * *');

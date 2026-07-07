@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\Admin as EnumsAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use Illuminate\Http\JsonResponse;
@@ -55,6 +56,12 @@ class LoginController extends Controller
         if (!$admin) {
             return back()->withErrors([
                 'username' => '존재하지 않는 아이디입니다.',
+            ])->withInput();
+        }
+
+        if ($admin->is_active == EnumsAdmin::INACTIVE->value) {
+            return back()->withErrors([
+                'username' => '정지 된 계정입니다.',
             ])->withInput();
         }
 

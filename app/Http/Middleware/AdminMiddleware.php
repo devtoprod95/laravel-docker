@@ -13,6 +13,11 @@ class AdminMiddleware
     {
         $passRoutes       = ['logout'];
         $currentRouteName = request()->route()->getName();
+
+        if ($request->bearerToken() && hash_equals(env('LOG_VIEWER_TOKEN', ''), $request->bearerToken())) {
+            return $next($request);
+        }
+
         if ($guard === 'login') {
             if( !in_array($currentRouteName, $passRoutes) && !Auth::guard('admin')->check() ){
                 return redirect()->route('login', ['redirectTo' => $request->fullUrl()]);
@@ -21,7 +26,7 @@ class AdminMiddleware
 
         if ($guard === 'guest') {
             if (Auth::guard('admin')->check() && in_array($currentRouteName, ['show', 'login'])) {
-                return redirect()->route('dashboard')->with('alert', '이미 로그인이 되었습니다.');
+                return redirect()->route('/')->with('alert', '이미 로그인이 되었습니다.');
             }
         }
 

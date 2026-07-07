@@ -17,13 +17,15 @@ class TrackVisitorMiddleware
 
     public function handle(Request $request, Closure $next)
     {
-        // API, 기타 페이지 제외
-        if ($request->is('api/*', '*.css', '*.js', '*.ico')) {
-            return $next($request);
-        }
-
-        if (!$this->isBot($request)) {
-            $this->recordVisit($request);
+        if ($request->isMethod('GET')) {
+            if (!$request->is('api/*', '*.css', '*.js', '*.ico', '*.map',
+                '_debugbar*', '.well-known*') &&
+                !$request->expectsJson() &&
+                $request->header('X-Requested-With') !== 'XMLHttpRequest') {
+                if (!$this->isBot($request)) {
+                    $this->recordVisit($request);
+                }
+            }
         }
 
         return $next($request);
@@ -31,16 +33,13 @@ class TrackVisitorMiddleware
 
     private function recordVisit(Request $request): void
     {
-        $ip    = $this->getClientIp($request);
-        $today = now()->toDateString();
-
+        $ip       = $this->getClientIp($request);
+        $today    = now()->toDateString();
         $cacheKey = "visitor_ip:{$today}:{$ip}";
 
         if (Cache::has($cacheKey)) {
             return;
         }
-
-        Cache::put($cacheKey, true, now()->endOfDay());
 
         VisitorLog::create([
             'ip'         => $ip,
@@ -48,7 +47,13 @@ class TrackVisitorMiddleware
             'visited_at' => $today,
         ]);
 
-        Cache::forget(CacheKey::VisitorStats->value);
+        Cache::put($cacheKey, true, now()->endOfDay());
+        $stats = Cache::get(CacheKey::VisitorStats->value);
+        if ($stats) {
+            $stats['total_visitors']++;
+            $stats['today_visitors']++;
+            Cache::put(CacheKey::VisitorStats->value, $stats, now()->endOfDay());
+        }
     }
 
     private function getClientIp(Request $request): string
