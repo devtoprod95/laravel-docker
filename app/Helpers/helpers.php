@@ -5,6 +5,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
+use GuzzleHttp\Client;
+use Illuminate\Http\UploadedFile;
 
 if (!function_exists("apiRes")) {
     function apiRes(int $status, array $params = [], string $message = ""): JsonResponse
@@ -187,5 +189,117 @@ if (!function_exists("channelLog")) {
 
         // 로깅 실행
         $logger->{$level}($prefixedMessage);
+    }
+}
+
+if (!function_exists('helperCurl')) {
+    /**
+     * HTTP 요청 처리
+     *
+     * @param string $method (GET, POST, PUT, DELETE, PATCH)
+     * @param string $url
+     * @param array|string $header 요청 헤더
+     * @param mixed $data 요청 바디 데이터 (배열 또는 JSON 문자열)
+     * @param bool $status HTTP 상태코드 포함 여부
+     * @param bool $includeHeader 응답 헤더 포함 여부
+     * @return array
+     */
+    function helperCurl(
+        string $method,
+        string $url,
+        array $header        = [],
+        mixed $data          = '',
+        bool  $status        = false,
+        bool  $includeHeader = false
+    ) {
+        $client = new Client([
+            'timeout'         => 30,
+            'connect_timeout' => 10,
+            'http_errors'     => false,
+            'verify'          => env('APP_ENV') === 'production',   // 개발환경에서는 SSL 검증 스킵
+        ]);
+
+        $options = [
+            'headers' => $header,
+        ];
+
+        if (!empty($data)) {
+            if (is_array($data)) {
+                $options['json'] = $data;
+            } else {
+                // JSON 문자열인 경우
+                $options['body'] = $data;
+            }
+        }
+
+        // HTTP 요청 실행
+        $response        = $client->request(strtoupper($method), $url, $options);
+        $statusCode      = $response->getStatusCode();
+        $body            = $response->getBody()->getContents();
+        $body            = json_decode($body, true);
+        $responseHeaders = $response->getHeaders();
+
+        // 반환값 구성
+        $result = [];
+
+        if ($includeHeader) {
+            $result['headers'] = $responseHeaders;
+        }
+
+        $result['body'] = $body;
+
+        if ($status) {
+            $result['status'] = $statusCode;
+        }
+
+        // 단순 바디만 반환하는 경우
+        if (!$status && !$includeHeader) {
+            return $body;
+        }
+
+        return $result;
+    }
+}
+
+if (!function_exists('onlyNumber')) {
+    function onlyNumber(mixed $value): int
+    {
+        if (is_numeric($value)) {
+            return (int) $value;
+        }
+
+        if (is_string($value)) {
+            $cleaned = preg_replace('/[^0-9]/', '', $value);
+            return $cleaned !== '' ? (int) $cleaned : 0;
+        }
+
+        return 0;
+    }
+};
+
+if (!function_exists('saveTempFile')) {
+        /**
+     * 임시 파일 저장
+     */
+    function saveTempFile(UploadedFile $file): string
+    {
+        $tmpDir = storage_path('app/tmp');
+
+        if (!is_dir($tmpDir)) {
+            mkdir($tmpDir, 0777, true);
+        }
+
+        $fileName    = $file->getClientOriginalName();
+        $extension   = $file->getClientOriginalExtension();
+        $datePart    = date('Ymd_His');
+        $uniquePart  = bin2hex(random_bytes(4));
+        $tmpFileName = sprintf('%s_%s_%s.%s', pathinfo($fileName, PATHINFO_FILENAME), $datePart, $uniquePart, $extension);
+        $tmpPath     = $tmpDir . '/' . $tmpFileName;
+
+        if (!$file->move($tmpDir, $tmpFileName)) {
+            throw new Exception('임시 저장 실패');
+        }
+
+        return $tmpPath;
     }
 }

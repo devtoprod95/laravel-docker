@@ -284,3 +284,13 @@ window.tabulatorHeaderMenu = function() {
 
     return menu;
 };
+
+function formatNumber(value) {
+    var num = value.replace(/[^0-9]/g, '');
+    return num ? Number(num).toLocaleString() : '';
+}
+
+function getNumberOnly(value) {
+    var num = value.replace(/[^0-9]/g, '');
+    return num ? parseInt(num, 10) : 0;
+}

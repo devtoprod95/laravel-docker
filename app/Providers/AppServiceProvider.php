@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Models\User;
 use App\Services\DashboardService;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -24,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Paginator::useBootstrapFive();
         Cache::rememberForever('app_started_at', fn() => now()->toDateTimeString());
 
         Gate::define('viewLogViewer', function (?User $user) {
