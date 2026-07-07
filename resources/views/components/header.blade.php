@@ -10,41 +10,41 @@
                 <span class="fw-bold fs-3">{{ env('APP_NAME') }}</span>
             </a>
 
-            @if( !empty(auth('admin')->user()) )
-                <div class="navbar-nav flex-row order-md-last">
-                    <div class="nav-item dropdown">
-                        <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown">
-                            <span class="avatar avatar-sm">{{ mb_substr(auth('admin')->user()->name, 0, 1) }}</span>
-                            <div class="d-none d-xl-block ps-2">
-                                <div>{{ auth('admin')->user()->name }}</div>
-                                <div class="mt-1 small text-muted">
-                                    @foreach(auth('admin')->user()->roles as $role)
-                                        {{ $role->display_name }}
-                                        @if(!$loop->last) |
-                                        @endif
-                                    @endforeach
+            <div class="navbar-nav flex-row order-md-last">
+
+                @if( !empty(auth('admin')->user()) )
+                        <div class="nav-item dropdown">
+                            <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown">
+                                <span class="avatar avatar-sm">{{ mb_substr(auth('admin')->user()->name, 0, 1) }}</span>
+                                <div class="d-none d-xl-block ps-2">
+                                    <div>{{ auth('admin')->user()->name }}</div>
+                                    <div class="mt-1 small text-muted">
+                                        @foreach(auth('admin')->user()->roles as $role)
+                                            {{ $role->display_name }}
+                                            @if(!$loop->last) |
+                                            @endif
+                                        @endforeach
+                                    </div>
                                 </div>
-                            </div>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-end">
-                            <a href="/profile" class="dropdown-item">
-                                <i class="ti ti-user me-2 fs-2"></i>프로필
                             </a>
-                            <button type="button" class="dropdown-item text-danger btn-logout">
-                                <i class="ti ti-logout me-2 fs-2"></i>로그아웃
-                            </button>
+                            <div class="dropdown-menu dropdown-menu-end">
+                                <a href="/profile" class="dropdown-item">
+                                    <i class="ti ti-user me-2 fs-2"></i>프로필
+                                </a>
+                                <button type="button" class="dropdown-item text-danger btn-logout">
+                                    <i class="ti ti-logout me-2 fs-2"></i>로그아웃
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            @else
-                <div class="navbar-nav flex-row order-md-last">
+                @else
                     <div class="nav-item">
                         <a href="{{ route('login') }}" class="btn btn-primary">
                             로그인
                         </a>
                     </div>
-                </div>
-            @endif
+                @endif
+            </div>
+
         </div>
     </header>
 
