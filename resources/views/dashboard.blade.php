@@ -1,6 +1,6 @@
 @php
     use Carbon\Carbon;
-
+    use App\Enums\Role;
 @endphp
 @extends('layouts.app')
 
@@ -24,6 +24,18 @@
                     <i class="ti ti-refresh me-1"></i>
                     새로고침
                 </button>
+                @if (auth('admin')->user()->hasRole(Role::SuperAdmin->value))
+                    <button class="btn btn-warning align-items-baseline" onclick="window.open('{{ route('log-viewer.index') }}', '_blank')">
+                        <i class="ti ti-terminal-2 me-1"></i>
+                        시스템 로그
+                    </button>
+                    @if (env('QUEUE_CONNECTION', '') === 'redis')
+                        <button class="btn btn-danger align-items-baseline" onclick="window.open('/horizon', '_blank')">
+                            <i class="ti ti-stack-2 me-1"></i>
+                            Queue Monitor
+                        </button>
+                    @endif
+                @endif
             </div>
         </div>
     </div>

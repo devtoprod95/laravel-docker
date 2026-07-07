@@ -1,7 +1,7 @@
 services:
   nginx:
     image: nginx:alpine
-    container_name: nginx
+    container_name: baseplate-nginx
     ports:
       - "${NGINX_PORT:-9083}:80"
     environment:
@@ -10,31 +10,29 @@ services:
       - ./docker/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
       - .:/var/www/html
     depends_on:
-      - php83
+      - baseplate-php
 
-  php83:
+  baseplate-php:
     build: ./docker
-    container_name: php83
+    container_name: baseplate-php
     restart: always
     user: "1000:1000"
     expose:
       - "${PHP_PORT:-9000}"
     environment:
       - TZ=Asia/Seoul
-      - REDIS_HOST=phpredis
-      - REDIS_PORT=${REDIS_PORT:-6379}
     volumes:
       - ./docker/php.ini:/usr/local/etc/php/php.ini
       - .:/var/www/html
     depends_on:
-      - phpredis
+      - baseplate-redis
 
-  phpredis:
+  baseplate-redis:
     image: redis:alpine
-    container_name: phpredis
+    container_name: baseplate-redis
     restart: always
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "6079:6379"
     command: redis-server
 
 volumes:
