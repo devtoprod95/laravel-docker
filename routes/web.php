@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('role')->group(function () {
     Route::middleware('admin:login')->group(function () {
         Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::delete('/dashboard/log', [DashboardController::class, 'deleteLog'])->name('dashboard.log.delete');
 
         Route::prefix('admin')->name('admin.')->group(function () {
@@ -39,6 +38,9 @@ Route::middleware('role')->group(function () {
         });
 
         Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/icons', function () {
+                return view('icons');
+            })->name('icons');
             Route::get('/general', function () {
                 return view('setting-general');
             })->name('general');
@@ -59,9 +61,7 @@ Route::middleware('role')->group(function () {
     });
 
     Route::middleware('admin:guest')->group(function () {
-        Route::get('/', function () {
-            return view('icons');
-        })->name('/');
+        Route::get('/', [DashboardController::class, 'dashboard'])->name('/');
         Route::get('/login', [LoginController::class, 'show'])->name('show');
         Route::post('/login', [LoginController::class, 'login'])->name('login');
 

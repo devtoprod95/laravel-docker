@@ -44,7 +44,30 @@
         <div class="page-wrapper">
             <div class="page-header d-print-none">
                 <div class="container-xl">
-                    <h2 class="page-title">@yield('title')</h2>
+                    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+                        <h2 class="page-title mb-0">@yield('title', 'Dashboard')</h2>
+
+                        @php($breadcrumbs = \App\Enums\Menu::menuPath())
+
+                        @if(!empty($breadcrumbs))
+                            <ol class="breadcrumb breadcrumb-arrows mb-0 ms-md-auto">
+                                @foreach($breadcrumbs as $breadcrumb)
+                                    <li class="breadcrumb-item">
+                                        @if(!empty($breadcrumb['route']))
+                                            <a
+                                                href="{{ route($breadcrumb['route']) }}"
+                                                class="{{ $loop->last ? 'text-primary fw-semibold' : '' }}"
+                                            >
+                                                {{ $breadcrumb['name'] }}
+                                            </a>
+                                        @else
+                                            <span>{{ $breadcrumb['name'] }}</span>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ol>
+                        @endif
+                    </div>
                 </div>
             </div>
             <div class="page-body mt-0">

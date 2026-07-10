@@ -7,7 +7,7 @@
 @section('title', '대시보드')
 
 @section('content')
-    <div class="page-header d-print-none mt-0">
+    <div class="page-header d-print-none mt-3">
         <div class="row g-2 align-items-center">
             <div class="col">
                 <div class="text-muted mt-1">
@@ -24,7 +24,7 @@
                     <i class="ti ti-refresh me-1"></i>
                     새로고침
                 </button>
-                @if (auth('admin')->user()->hasRole(Role::SuperAdmin->value))
+                @if (auth('admin')->user() && auth('admin')->user()->hasRole(Role::SuperAdmin->value))
                     <button class="btn btn-warning align-items-baseline" onclick="window.open('{{ route('log-viewer.index') }}', '_blank')">
                         <i class="ti ti-terminal-2 me-1"></i>
                         시스템 로그
@@ -118,7 +118,9 @@
                     <div class="card-header">
                         <h3 class="card-title">
                             실시간 접속 관리자
-                            <span class="badge bg-green text-white ms-1">{{ count($onlineUsers ?? []) }}명</span>
+                            @if(auth('admin')->user())
+                                <span class="badge bg-green text-white ms-1">{{ count($onlineUsers ?? []) }}명</span>
+                            @endif
                         </h3>
                     </div>
                     <div class="card-body p-0" style="max-height: 320px; overflow-y: auto;">
@@ -148,9 +150,15 @@
                                 </div>
                             </div>
                         @empty
-                            <div class="text-center text-muted py-5 align-content-center h-100">
-                                <p>현재 접속 중인 관리자가 없습니다</p>
-                            </div>
+                            @if(!auth('admin')->user())
+                                <div class="text-center text-muted py-5 align-content-center h-100">
+                                    <p>로그인을 해주세요.</p>
+                                </div>
+                            @else
+                                <div class="text-center text-muted py-5 align-content-center h-100">
+                                    <p>현재 접속 중인 관리자가 없습니다.</p>
+                                </div>
+                            @endif
                         @endforelse
                     </div>
                 </div>
@@ -357,7 +365,7 @@
                         </h3>
                         <div class="card-options">
                             <div class="ms-2 d-flex gap-1">
-                                @if(!empty($logs))
+                                @if(auth('admin')->user() &&!empty($logs))
                                     <button type="submit" class="btn btn-outline-danger btn-sm btn-log-delete">
                                         <i class="ti ti-trash me-1"></i>로그 삭제
                                     </button>

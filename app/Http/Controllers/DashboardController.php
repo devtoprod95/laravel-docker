@@ -25,7 +25,7 @@ class DashboardController extends Controller
         $this->request = $request;
     }
 
-    public function index(): View
+    public function dashboard(): View
     {
         $httpStatsArr = $this->dashboardService->getHttpStatusStats();
         $params       = [
