@@ -10,6 +10,17 @@ use Symfony\Component\HttpFoundation\Response;
 
 class TrackHttpStatusCountsMiddleware
 {
+    private array $botKeywords = [
+        'bot', 'crawler', 'spider', 'curl', 'wget',
+        'slurp', 'bingbot', 'googlebot', 'yandex',
+    ];
+
+    private array $nonBrowserKeywords = [
+        'python', 'python-requests', 'aiohttp', 'httpx',
+        'postmanruntime', 'insomnia', 'okhttp', 'java/',
+        'go-http-client', 'libwww-perl', 'guzzlehttp', 'php/',
+    ];
+
     public function handle(Request $request, Closure $next): Response
     {
         return $next($request);
@@ -17,7 +28,7 @@ class TrackHttpStatusCountsMiddleware
 
     public function terminate(Request $request, Response $response): void
     {
-        if ($this->shouldSkip($request)) {
+        if ($this->shouldSkip($request, $response)) {
             return;
         }
 
@@ -30,7 +41,7 @@ class TrackHttpStatusCountsMiddleware
         Redis::expire($key, $ttl);
     }
 
-    private function shouldSkip(Request $request): bool
+    private function shouldSkip(Request $request, Response $response): bool
     {
         $excludeExtensions = [
             'ico', 'png', 'jpg', 'jpeg', 'gif', 'svg',
@@ -38,7 +49,15 @@ class TrackHttpStatusCountsMiddleware
             'txt', 'xml'
         ];
 
-        $path = $request->path();
+        if (!$request->isMethod('GET')) {
+            return true;
+        }
+
+        $path = strtolower($request->path());
+
+        if ($path === 'up') {
+            return true;
+        }
 
         if (str_starts_with($path, '_debugbar')) {
             return true;
@@ -53,11 +72,70 @@ class TrackHttpStatusCountsMiddleware
             return true;
         }
 
+        if ($request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return true;
+        }
+
+        if ($this->isBot($request)) {
+            return true;
+        }
+
+        if (!$this->isWebBrowser($request)) {
+            return true;
+        }
+
+        $fetchDest = strtolower((string) $request->header('Sec-Fetch-Dest', ''));
+        if ($fetchDest !== '' && $fetchDest !== 'document') {
+            return true;
+        }
+
+        if (
+            $response->isRedirection()
+            && str_contains(strtolower((string) $response->headers->get('Location', '')), '/login')
+            && !$request->routeIs('show', 'login')
+        ) {
+            return true;
+        }
+
         if (!$request->route()) {
             return true;
         }
 
         return false;
+    }
+
+    private function isBot(Request $request): bool
+    {
+        $ua = strtolower($request->userAgent() ?? '');
+
+        foreach ($this->botKeywords as $keyword) {
+            if (str_contains($ua, $keyword)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function isWebBrowser(Request $request): bool
+    {
+        $ua = strtolower(trim($request->userAgent() ?? ''));
+
+        if ($ua === '' || !str_contains($ua, 'mozilla/')) {
+            return false;
+        }
+
+        foreach ($this->nonBrowserKeywords as $keyword) {
+            if (str_contains($ua, $keyword)) {
+                return false;
+            }
+        }
+
+        return str_contains($ua, 'chrome/')
+            || str_contains($ua, 'safari/')
+            || str_contains($ua, 'firefox/')
+            || str_contains($ua, 'edg/')
+            || str_contains($ua, 'opr/');
     }
 
 }
