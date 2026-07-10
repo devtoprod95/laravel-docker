@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Enums\Admin as EnumsAdmin;
+use App\Enums\CacheKey;
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -98,6 +100,17 @@ class LoginController extends Controller
     public function logout(Request $request): JsonResponse
     {
         try {
+            /** @var \App\Models\Admin|null $admin */
+            $admin = Auth::guard('admin')->user();
+
+            if ($admin) {
+                $roleIds = $admin->roles->pluck('id')->sort()->implode('_');
+
+                if ($roleIds !== '') {
+                    Cache::forget(CacheKey::AdminDeniedRoutesRoles->forRoleIds($roleIds));
+                }
+            }
+
             Auth::guard('admin')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\CacheKey;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,7 +18,7 @@ class RoleMiddleware
 
             // 관리자의 모든 역할 ID를 가져와 고유한 캐시 키 생성
             $roleIds  = $admin->roles->pluck('id')->sort()->implode('_');
-            $cacheKey = "admin_denied_routes_roles_{$roleIds}";
+            $cacheKey = CacheKey::AdminDeniedRoutesRoles->forRoleIds($roleIds);
 
             // 역할별 금지된 라우트들의 리스트를 캐시에서 가져옴 (각 역할이 금지하고 있는 라우트들의 집합)
             $rolesDeniedRoutes = cache()->remember($cacheKey, 3600, function () use ($admin) {
@@ -35,7 +36,7 @@ class RoleMiddleware
             });
 
             if ($admin->roles->isNotEmpty() && $isDeniedInAllRoles) {
-                abort(403, '이 페이지에 접근할 권한이 없습니다.');
+                abort(403, '이 페이지에 접근할 권한이 없습니다. 관리자에 문의해주세요.');
             }
         }
 
