@@ -1,8 +1,9 @@
-FROM php:8.3-fpm
+FROM php:8.3-fpm-bookworm
 
 ENV TZ=Asia/Seoul
+ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpng-dev \
     libjpeg62-turbo-dev \
@@ -15,13 +16,13 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     zip unzip \
     jpegoptim optipng pngquant gifsicle \
-    vim git curl tzdata supervisor && \
+    vim git curl tzdata supervisor ffmpeg && \
     docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-install pdo_mysql pdo_pgsql pgsql mbstring zip exif pcntl bcmath gd && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
+    && apt-get install -y --no-install-recommends nodejs \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \

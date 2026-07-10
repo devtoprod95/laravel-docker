@@ -10,30 +10,6 @@ enum Menu: string
     case Admin     = 'admin';
     case Settings  = 'settings';
 
-    public function info(): array
-    {
-        return self::menuDefinitions()[$this->value];
-    }
-
-    public static function menuPath(?string $routeName = null, ?string $path = null): array
-    {
-        $routeName ??= (string) request()->route()?->getName();
-        $path ??= trim((string) request()->path(), '/');
-
-        $bestMenuPath = [];
-
-        foreach (self::menuDefinitions() as $menuDefinition) {
-            $matchedMenuPath = self::findMenuPath($menuDefinition, $routeName, $path);
-
-            // 더 깊은 메뉴일수록 더 구체적인 현재 페이지 경로다.
-            if ($matchedMenuPath !== null && count($matchedMenuPath) > count($bestMenuPath)) {
-                $bestMenuPath = $matchedMenuPath;
-            }
-        }
-
-        return $bestMenuPath;
-    }
-
     private static function menuDefinitions(): array
     {
         return [
@@ -78,6 +54,30 @@ enum Menu: string
                 ],
             ],
         ];
+    }
+
+    public function info(): array
+    {
+        return self::menuDefinitions()[$this->value];
+    }
+
+    public static function menuPath(?string $routeName = null, ?string $path = null): array
+    {
+        $routeName ??= (string) request()->route()?->getName();
+        $path ??= trim((string) request()->path(), '/');
+
+        $bestMenuPath = [];
+
+        foreach (self::menuDefinitions() as $menuDefinition) {
+            $matchedMenuPath = self::findMenuPath($menuDefinition, $routeName, $path);
+
+            // 더 깊은 메뉴일수록 더 구체적인 현재 페이지 경로다.
+            if ($matchedMenuPath !== null && count($matchedMenuPath) > count($bestMenuPath)) {
+                $bestMenuPath = $matchedMenuPath;
+            }
+        }
+
+        return $bestMenuPath;
     }
 
     private static function findMenuPath(array $menuDefinition, string $routeName, string $path, array $currentPath = []): ?array
