@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxml2-dev \
     libssl-dev \
     libpq-dev \
+    procps \
     zip unzip \
     jpegoptim optipng pngquant gifsicle \
     vim git curl tzdata supervisor ffmpeg && \
