@@ -124,42 +124,42 @@
                         </h3>
                     </div>
                     <div class="card-body p-0" style="max-height: 320px; overflow-y: auto;">
-                        @forelse($onlineUsers ?? [] as $user)
-                            <div class="d-flex align-items-center px-3 py-2 border-bottom">
-                                <span class="avatar avatar-sm rounded-circle me-2">
-                                    {{ mb_substr($user['name'], 0, 1) }}
-                                </span>
-                                <div class="flex-fill">
-                                    <div class="fw-medium text-truncate" style="max-width: 140px;">{{ $user['name'] }}</div>
-                                    <div class="text-muted small text-truncate" style="max-width: 140px;">{{ $user['current_page'] ?? '-' }}</div>
-                                    <div class="text-muted fs-6">{{ $user['last_active_at_raw'] ?? '' }}</div>
-                                </div>
-                                <div class="ms-auto text-end">
-                                    <span class="text-muted small">
-                                        @if(!empty($user['last_active_at']) && $user['last_active_at'] !== 'offline')
-                                            {{ $user['last_active_at'] ?? '' }}
-                                        @endif
+                        @if(!auth('admin')->user())
+                            <div class="text-center text-muted py-5 align-content-center h-100">
+                                <p>로그인을 해주세요.</p>
+                            </div>
+                        @else
+                            @forelse($onlineUsers ?? [] as $user)
+                                <div class="d-flex align-items-center px-3 py-2 border-bottom">
+                                    <span class="avatar avatar-sm rounded-circle me-2">
+                                        {{ mb_substr($user['name'], 0, 1) }}
                                     </span>
-                                    <div>
-                                        @if(($user['last_active_at'] ?? '') === 'offline')
-                                            <span class="badge bg-red-lt text-red">오프라인</span>
-                                        @else
-                                            <span class="badge bg-green-lt text-green">접속중</span>
-                                        @endif
+                                    <div class="flex-fill">
+                                        <div class="fw-medium text-truncate" style="max-width: 140px;">{{ $user['name'] }}</div>
+                                        <div class="text-muted small text-truncate" style="max-width: 140px;">{{ $user['current_page'] ?? '-' }}</div>
+                                        <div class="text-muted fs-6">{{ $user['last_active_at_raw'] ?? '' }}</div>
+                                    </div>
+                                    <div class="ms-auto text-end">
+                                        <span class="text-muted small">
+                                            @if(!empty($user['last_active_at']) && $user['last_active_at'] !== 'offline')
+                                                {{ $user['last_active_at'] ?? '' }}
+                                            @endif
+                                        </span>
+                                        <div>
+                                            @if(($user['last_active_at'] ?? '') === 'offline')
+                                                <span class="badge bg-red-lt text-red">오프라인</span>
+                                            @else
+                                                <span class="badge bg-green-lt text-green">접속중</span>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        @empty
-                            @if(!auth('admin')->user())
-                                <div class="text-center text-muted py-5 align-content-center h-100">
-                                    <p>로그인을 해주세요.</p>
-                                </div>
-                            @else
+                            @empty
                                 <div class="text-center text-muted py-5 align-content-center h-100">
                                     <p>현재 접속 중인 관리자가 없습니다.</p>
                                 </div>
-                            @endif
-                        @endforelse
+                            @endforelse
+                        @endif
                     </div>
                 </div>
             </div>
