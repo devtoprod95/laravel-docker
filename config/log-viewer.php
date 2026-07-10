@@ -175,6 +175,7 @@ return [
 
     'include_files' => [
         storage_path('logs/*.log'),
+        storage_path('logs/**/*.log'),
 
         // '*.log',
         // '**/*.log',
