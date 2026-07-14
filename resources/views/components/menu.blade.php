@@ -1,10 +1,13 @@
 <ul class="navbar-nav">
     @php
         $activeMenuNames = collect(App\Enums\Menu::menuPath())->pluck('name')->all();
+        $menus           = \App\Support\MenuVisibility::filterForAdmin(
+            auth('admin')->user(),
+            collect(App\Enums\Menu::cases())->map(fn ($menu) => $menu->info())->all()
+        );
     @endphp
 
-    @foreach(App\Enums\Menu::cases() as $menu)
-        @php $item = $menu->info(); @endphp
+    @foreach($menus as $item)
 
         <li class="nav-item {{ isset($item['children']) ? 'dropdown' : '' }} {{ in_array($item['name'], $activeMenuNames, true) ? 'active' : '' }}">
             <a class="nav-link {{ isset($item['children']) ? 'dropdown-toggle' : '' }}"

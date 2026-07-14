@@ -28,32 +28,34 @@ class DashboardController extends Controller
     public function dashboard(): View
     {
         $httpStatsArr = $this->dashboardService->getHttpStatusStats();
+        $server = [
+            'memory_used'  => (int) shell_exec("awk '/MemTotal/{t=$2} /MemAvailable/{a=$2} END{printf \"%d\", (t-a)/1024}' /proc/meminfo"),
+            'memory_total' => (int) shell_exec("awk '/MemTotal/{printf \"%d\", $2/1024}' /proc/meminfo"),
+            'cpu_usage'    => min(round(sys_getloadavg()[0] / max(1, (int) shell_exec("grep -c ^processor /proc/cpuinfo")) * 100), 100),
+            'uptime'       => (function() {
+                $startedAt = Carbon::parse(Cache::get('app_started_at', now()));
+                $seconds   = (int) $startedAt->diffInSeconds(now());
+                $days      = floor($seconds / 86400);
+                $hours     = floor(($seconds % 86400) / 3600);
+                $minutes   = floor(($seconds % 3600) / 60);
+
+                return ($days > 0 ? "{$days}일 " : '') . ($hours > 0 ? "{$hours}시간 " : '') . "{$minutes}분";
+            })(),
+            'disk_used'       => round((int) shell_exec("df -m / | tail -1 | awk '{print $3}'") / 1024, 1),
+            'disk_total'      => round((int) shell_exec("df -m / | tail -1 | awk '{print $2}'") / 1024, 1),
+            'php_version'     => PHP_VERSION,
+            'laravel_version' => app()->version(),
+            'os'              => php_uname('s'),
+        ];
+        $logs = $this->getLogs();
         $params       = [
             'stats'       => $this->dashboardService->getVisitorStats(),
             'onlineUsers' => $this->dashboardService->getOnlineUsers(),
             'schedules'   => $this->getSchedules(),
-            'server'      => [
-                'memory_used'  => (int) shell_exec("awk '/MemTotal/{t=$2} /MemAvailable/{a=$2} END{printf \"%d\", (t-a)/1024}' /proc/meminfo"),
-                'memory_total' => (int) shell_exec("awk '/MemTotal/{printf \"%d\", $2/1024}' /proc/meminfo"),
-                'cpu_usage'    => min(round(sys_getloadavg()[0] / max(1, (int) shell_exec("grep -c ^processor /proc/cpuinfo")) * 100), 100),
-                'uptime'       => (function() {
-                    $startedAt = Carbon::parse(Cache::get('app_started_at', now()));
-                    $seconds   = (int) $startedAt->diffInSeconds(now());
-                    $days      = floor($seconds / 86400);
-                    $hours     = floor(($seconds % 86400) / 3600);
-                    $minutes   = floor(($seconds % 3600) / 60);
-
-                    return ($days > 0 ? "{$days}일 " : '') . ($hours > 0 ? "{$hours}시간 " : '') . "{$minutes}분";
-                })(),
-                'disk_used'       => round((int) shell_exec("df -m / | tail -1 | awk '{print $3}'") / 1024, 1),
-                'disk_total'      => round((int) shell_exec("df -m / | tail -1 | awk '{print $2}'") / 1024, 1),
-                'php_version'     => PHP_VERSION,
-                'laravel_version' => app()->version(),
-                'os'              => php_uname('s'),
-            ],
+            'server'      => $server,
             'httpStats'        => $httpStatsArr['httpStats'],
             'httpStatusLabels' => $httpStatsArr['httpStatusLabels'],
-            'logs'             => $this->getLogs(),
+            'logs'             => $logs,
         ];
 
         return view('dashboard', $params);

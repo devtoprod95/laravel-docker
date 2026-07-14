@@ -1,6 +1,6 @@
 @props(['item', 'activeMenuNames' => []])
 
-@if(isset($item['children']))
+@if(!empty($item['children']))
     {{-- 3뎁스 이상인 경우: Dropend (또는 Dropdown) --}}
     @php
         $isActive = collect($item['children'])->contains(function($child) use ($activeMenuNames) {
@@ -22,7 +22,7 @@
     </div>
 @else
     {{-- 2뎁스 이하인 경우: 일반 링크 --}}
-    <a href="{{ route($item['route']) }}" class="dropdown-item {{ in_array($item['name'], $activeMenuNames, true) ? 'active' : '' }}">
+    <a href="{{ isset($item['route']) ? route($item['route']) : '#' }}" class="dropdown-item {{ in_array($item['name'], $activeMenuNames, true) ? 'active' : '' }}">
         {{ $item['name'] }}
     </a>
 @endif
