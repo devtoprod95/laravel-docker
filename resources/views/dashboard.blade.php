@@ -30,11 +30,15 @@
                         시스템 로그
                     </button>
                     @if (env('QUEUE_CONNECTION', '') === 'redis')
-                        <button class="btn btn-danger align-items-baseline" onclick="window.open('/horizon', '_blank')">
+                        <button class="btn btn-danger align-items-baseline me-1" onclick="window.open('/horizon', '_blank')">
                             <i class="ti ti-stack-2 me-1"></i>
                             Queue Monitor
                         </button>
                     @endif
+                    <button class="btn btn-purple align-items-baseline" onclick="window.open('/pulse', '_blank')">
+                        <i class="ti ti-activity me-1"></i>
+                        Pulse Monitor
+                    </button>
                 @endif
             </div>
         </div>

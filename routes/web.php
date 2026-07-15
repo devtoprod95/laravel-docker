@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\K6Controller;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('role')->group(function () {
@@ -44,6 +45,9 @@ Route::middleware('role')->group(function () {
             Route::get('/general', function () {
                 return view('setting-general');
             })->name('general');
+            Route::get('/k6', [K6Controller::class, 'index'])->name('k6');
+            Route::post('/k6/run', [K6Controller::class, 'run'])->name('k6.run');
+            Route::post('/k6/install', [K6Controller::class, 'installK6'])->name('k6.install');
             Route::get('/security', function () {
                 return abort(404);
             })->name('security');

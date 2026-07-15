@@ -41,6 +41,7 @@ enum Menu: string
                 'pattern'  => 'settings*',
                 'children' => [
                     ['name' => '아이콘', 'route' => 'settings.icons', 'pattern' => 'settings/icons*'],
+                    ['name' => 'K6 부하 테스트', 'route' => 'settings.k6', 'pattern' => 'settings/k6*'],
                     ['name' => '일반', 'route' => 'settings.general', 'pattern' => 'settings/general*'],
                     ['name' => '보안', 'route' => 'settings.security', 'pattern' => 'settings/security*'],
                     [
