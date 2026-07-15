@@ -39,5 +39,12 @@ class AppServiceProvider extends ServiceProvider
             $flag = $admin && $admin->hasRole(Role::SuperAdmin->value);
             return $flag;
         });
+
+        Gate::define('viewPulse', function (Admin $admin = null) {
+            if (app()->environment('local')) {
+                return true;
+            }
+            return $admin && $admin->hasRole(Role::SuperAdmin->value);
+        });
     }
 }
