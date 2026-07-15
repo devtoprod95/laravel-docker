@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use App\Enums\Role;
-use App\Models\User;
+use App\Models\Admin;
 use App\Services\DashboardService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Pagination\Paginator;
@@ -28,16 +28,13 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrapFive();
         Cache::rememberForever('app_started_at', fn() => now()->toDateTimeString());
 
-        Gate::define('viewLogViewer', function (?User $user) {
+        Gate::define('viewLogViewer', function (Admin $admin) {
             $request = request();
 
             // 원격 프록시(로컬 서버)에서 온 토큰 요청은 허용
             if ($request->bearerToken() && hash_equals(env('LOG_VIEWER_TOKEN', ''), $request->bearerToken())) {
                 return true;
             }
-
-            /** @var \App\Models\Admin|null $admin */
-            $admin = auth('admin')->user();
 
             $flag = $admin && $admin->hasRole(Role::SuperAdmin->value);
             return $flag;
