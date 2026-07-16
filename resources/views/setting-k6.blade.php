@@ -672,37 +672,62 @@ $(document).ready(function() {
         let decoded = decodeUnicode(rawText);
         let lines = decoded.split('\n');
 
+        // VU별 고유 색상 매핑 (같은 요청자는 같은 색상 유지)
+        const vuColors = [
+            'bg-orange',
+            'bg-pink',
+            'bg-purple',
+            'bg-blue',
+            'bg-indigo',
+            'bg-teal',
+            'bg-azure',
+            'bg-green',
+            'bg-lime',
+            'bg-cyan',
+            'bg-yellow text-dark'
+        ];
+
         let formattedLines = lines.map(line => {
             // k6 console log 정규식 매칭
             let match = line.match(/time="[^"]+" level=info msg="\[VU:(\d+)\] (Response|Status): (.*?)" source=console/);
             if (match) {
                 let vu = match[1];
+                let vuNum = parseInt(vu, 10);
+                if (isNaN(vuNum)) {
+                    vuNum = 1;
+                }
                 let type = match[2];
                 let payload = match[3];
 
                 // 2. 이스케이프 백슬래시 및 이중 이스케이프 쌍따옴표 완벽 정화
                 let cleanedPayload = payload.replace(/\\"/g, '"').replace(/\\/g, '');
 
+                let vuColor = vuColors[(vuNum - 1) % vuColors.length] || 'bg-secondary';
+
                 try {
                     let json = JSON.parse(cleanedPayload);
                     let prettyJson = JSON.stringify(json, null, 2);
 
-                    let badgeColor = 'bg-secondary';
+                    // API 응답 상태(Status)에 따른 별도의 미니 뱃지 색상
+                    let statusColor = 'bg-secondary';
                     if (json.status === 200) {
-                        badgeColor = json.cached ? 'bg-info' : 'bg-success';
+                        statusColor = json.cached ? 'bg-info-lt' : 'bg-success-lt';
                     } else if (json.status === 409) {
-                        badgeColor = 'bg-warning';
+                        statusColor = 'bg-warning-lt';
                     } else {
-                        badgeColor = 'bg-danger';
+                        statusColor = 'bg-danger-lt';
                     }
+                    let statusText = json.status ? `${json.status}${json.cached ? ' (Cached)' : ''}` : 'Unknown';
 
                     return `<div class="py-2 border-bottom border-dark border-opacity-25 text-white">` +
-                           `<span class="badge ${badgeColor} text-white px-2 py-1 fs-5 me-2">동시 요청자 ${vu}</span>` +
+                           `<span class="badge ${vuColor} text-white px-2 py-1 fs-5 me-2">동시 요청자 ${vu}</span>` +
+                           `<span class="badge ${statusColor} px-2 py-1 fs-5">${statusText}</span>` +
                            `<pre class="m-0 mt-1 p-2 text-white bg-dark border border-secondary rounded font-monospace" style="font-size: 0.8rem; white-space: pre-wrap; line-height: 1.4;">${prettyJson}</pre>` +
                            `</div>`;
                 } catch (e) {
                     return `<div class="py-2 border-bottom border-dark border-opacity-25 text-muted">` +
-                           `<span class="badge bg-secondary text-white px-2 py-1 fs-5 me-2">동시 요청자 ${vu}</span>` +
+                           `<span class="badge ${vuColor} text-white px-2 py-1 fs-5 me-2">동시 요청자 ${vu}</span>` +
+                           `<span class="badge bg-danger-lt px-2 py-1 fs-5">ERROR</span>` +
                            `<pre class="m-0 mt-1 p-2 text-muted bg-dark border border-secondary rounded font-monospace" style="font-size: 0.8rem; white-space: pre-wrap;">${cleanedPayload}</pre>` +
                            `</div>`;
                 }
