@@ -28,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrapFive();
         Cache::rememberForever('app_started_at', fn() => now()->toDateTimeString());
 
-        Gate::define('viewLogViewer', function (Admin $admin) {
+        Gate::define('viewLogViewer', function (Admin $admin = null) {
             $request = request();
 
             // 원격 프록시(로컬 서버)에서 온 토큰 요청은 허용
