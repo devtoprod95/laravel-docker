@@ -672,37 +672,49 @@ $(document).ready(function() {
         let decoded = decodeUnicode(rawText);
         let lines = decoded.split('\n');
 
-        // VU별 고유 색상 매핑 (같은 요청자는 같은 색상 유지)
-        const vuColors = [
-            'bg-orange',
-            'bg-pink',
-            'bg-purple',
+        // 시간(초 단위)별 고유 색상 매핑을 위한 색상 테이블
+        const groupColors = [
             'bg-blue',
-            'bg-indigo',
-            'bg-teal',
             'bg-azure',
+            'bg-indigo',
+            'bg-purple',
+            'bg-pink',
+            'bg-orange',
+            'bg-teal',
             'bg-green',
             'bg-lime',
             'bg-cyan',
             'bg-yellow text-dark'
         ];
 
+        // 텍스트 기반 간단한 해싱 함수
+        function getGroupColor(timeStr) {
+            let hash = 0;
+            for (let i = 0; i < timeStr.length; i++) {
+                hash = timeStr.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            let index = Math.abs(hash) % groupColors.length;
+            return groupColors[index];
+        }
+
         let formattedLines = lines.map(line => {
-            // k6 console log 정규식 매칭
-            let match = line.match(/time="[^"]+" level=info msg="\[VU:(\d+)\] (Response|Status): (.*?)" source=console/);
+            // k6 console log 정규식 매칭 (time 값 그룹 매칭 추가)
+            let match = line.match(/time="([^"]+)" level=info msg="\[VU:(\d+)\] (Response|Status): (.*?)" source=console/);
             if (match) {
-                let vu = match[1];
-                let vuNum = parseInt(vu, 10);
-                if (isNaN(vuNum)) {
-                    vuNum = 1;
-                }
-                let type = match[2];
-                let payload = match[3];
+                let timeRaw = match[1];
+                let vu = match[2];
+                let type = match[3];
+                let payload = match[4];
+
+                // 시:분:초 (HH:mm:ss) 추출
+                let timeMatch = timeRaw.match(/(\d{2}):(\d{2}):(\d{2})/);
+                let timeKey = timeMatch ? timeMatch[0] : timeRaw;
 
                 // 2. 이스케이프 백슬래시 및 이중 이스케이프 쌍따옴표 완벽 정화
                 let cleanedPayload = payload.replace(/\\"/g, '"').replace(/\\/g, '');
 
-                let vuColor = vuColors[(vuNum - 1) % vuColors.length] || 'bg-secondary';
+                // 초 단위로 동일한 시간대에 발생한 요청들에 동일한 색상 지정
+                let groupColor = getGroupColor(timeKey);
 
                 try {
                     let json = JSON.parse(cleanedPayload);
@@ -720,13 +732,13 @@ $(document).ready(function() {
                     let statusText = json.status ? `${json.status}${json.cached ? ' (Cached)' : ''}` : 'Unknown';
 
                     return `<div class="py-2 border-bottom border-dark border-opacity-25 text-white">` +
-                           `<span class="badge ${vuColor} text-white px-2 py-1 fs-5 me-2">동시 요청자 ${vu}</span>` +
+                           `<span class="badge ${groupColor} text-white px-2 py-1 fs-5 me-2">${timeKey} 요청 (VU ${vu})</span>` +
                            `<span class="badge ${statusColor} px-2 py-1 fs-5">${statusText}</span>` +
                            `<pre class="m-0 mt-1 p-2 text-white bg-dark border border-secondary rounded font-monospace" style="font-size: 0.8rem; white-space: pre-wrap; line-height: 1.4;">${prettyJson}</pre>` +
                            `</div>`;
                 } catch (e) {
                     return `<div class="py-2 border-bottom border-dark border-opacity-25 text-muted">` +
-                           `<span class="badge ${vuColor} text-white px-2 py-1 fs-5 me-2">동시 요청자 ${vu}</span>` +
+                           `<span class="badge ${groupColor} text-white px-2 py-1 fs-5 me-2">${timeKey} 요청 (VU ${vu})</span>` +
                            `<span class="badge bg-danger-lt px-2 py-1 fs-5">ERROR</span>` +
                            `<pre class="m-0 mt-1 p-2 text-muted bg-dark border border-secondary rounded font-monospace" style="font-size: 0.8rem; white-space: pre-wrap;">${cleanedPayload}</pre>` +
                            `</div>`;
