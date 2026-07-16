@@ -17,6 +17,11 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone &
 
 RUN pecl install redis && docker-php-ext-enable redis
 
+# Install k6
+RUN curl -L -s https://github.com/grafana/k6/releases/download/v0.51.0/k6-v0.51.0-linux-amd64.tar.gz | tar -xz -C /tmp && \
+    mv /tmp/k6-v0.51.0-linux-amd64/k6 /usr/local/bin/k6 && \
+    rm -rf /tmp/k6-v0.51.0-linux-amd64
+
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 ENV COMPOSER_ALLOW_SUPERUSER=1

@@ -87,12 +87,15 @@
                     <!-- 추천 URL 퀵클릭 배지 -->
                     <div class="mt-2 d-flex gap-1 flex-wrap align-items-center" style="font-size: 0.75rem;">
                         <span class="text-muted me-1">URL 자동 입력:</span>
-                        <button type="button" class="btn btn-outline-secondary py-1 px-2 btn-quick-url" style="font-size: 0.72rem;" data-url="{{ $appUrl }}/api">
-                            현재 웹 도메인 ({{ $appUrl }}/api)
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary py-1 px-2 btn-quick-url" style="font-size: 0.72rem;" data-url="http://nginx:8080/api">
-                            도커 내부 (http://nginx:8080/api)
-                        </button>
+                        @if($isDocker)
+                            <button type="button" class="btn btn-outline-secondary py-1 px-2 btn-quick-url" style="font-size: 0.72rem;" data-url="http://nginx:8080/api">
+                                도커 내부 (http://nginx:8080/api)
+                            </button>
+                        @else
+                            <button type="button" class="btn btn-outline-secondary py-1 px-2 btn-quick-url" style="font-size: 0.72rem;" data-url="{{ $appUrl }}/api">
+                                현재 웹 도메인 ({{ $appUrl }}/api)
+                            </button>
+                        @endif
                     </div>
                 </div>
 
