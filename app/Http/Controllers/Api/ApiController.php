@@ -72,13 +72,6 @@ class ApiController extends Controller
 
         // 4. 최초 요청 처리 및 비즈니스 로직 수행
         try {
-            // 채널 로그 남김 (기존 log 기능 유지)
-            channelLog(
-                message : $request->all(),
-                channel : 'api' ,
-                filename: 'logging' ,
-            );
-
             $responseData = [
                 'processed_at' => now()->toDateTimeString(),
                 'client_ip'    => $request->ip(),
