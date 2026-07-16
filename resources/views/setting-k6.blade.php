@@ -115,15 +115,15 @@
                             <label class="form-label required">동시 사용자 수 (VUs)</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="ti ti-users"></i></span>
-                                <input type="number" class="form-control" id="vus" min="1" max="200" value="10" placeholder="10">
+                                <input type="number" class="form-control" id="vus" min="1" max="200" value="3" placeholder="3">
                                 <span class="input-group-text">명</span>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label required">테스트 기간 (Duration)</label>
                             <select class="form-select" id="duration">
-                                <option value="5s">5초 (빠른 확인)</option>
-                                <option value="10s" selected>10초 (기본값)</option>
+                                <option value="5s" selected>5초 (빠른 확인)</option>
+                                <option value="10s">10초</option>
                                 <option value="30s">30초</option>
                                 <option value="45s">45초 (최대)</option>
                             </select>
@@ -226,7 +226,7 @@
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <label class="form-check form-switch mb-2 mt-1">
-                                            <input class="form-check-input" type="checkbox" id="opt-discard-bodies" checked>
+                                            <input class="form-check-input" type="checkbox" id="opt-discard-bodies">
                                             <span class="form-check-label fs-5">응답 바디 무시 (성능 향상)</span>
                                         </label>
                                         <small class="text-muted d-block" style="font-size: 0.72rem; line-height: 1.2;">체크 시 응답 내용(Body)을 메모리에 담지 않아 부하기 성능을 향상시킵니다.</small>
@@ -463,8 +463,8 @@ $(document).ready(function() {
                              `    { duration: '${dDuration}', target: ${dTarget} }, // 램프다운 (부하 감소)\n` +
                              `  ],`;
         } else {
-            const vus = $('#vus').val() || 10;
-            const duration = $('#duration').val() || '10s';
+            const vus = $('#vus').val() || 3;
+            const duration = $('#duration').val() || '5s';
             loadOptionsStr = `\n  vus: ${vus},\n  duration: '${duration}',`;
         }
 
@@ -535,28 +535,38 @@ $(document).ready(function() {
 
         const reqTimeout = $('#opt-timeout').val() || '5s';
 
-        const scriptContent = `import http from 'k6/http';
-import { sleep, check } from 'k6';
-
-export const options = {${loadOptionsStr}${advOptionsStr}${thresholdsStr}
-};
-
-export default function () {
-  const url = '${url}';
-  const payload = ${bodyStr};
-  const params = {
-${headersStr}    timeout: '${reqTimeout}',
-  };
-
-  const res = http.request('${method}', url, payload, params);
-
-  check(res, {
-    'status is 200': (r) => r.status === 200,
-    'response duration < 1000ms': (r) => r.timings.duration < 1000,
-  });
-
-  sleep(1);
-}`;
+        const scriptLines = [
+            "import http from 'k6/http';",
+            "import { sleep, check } from 'k6';",
+            "",
+            `export const options = {${loadOptionsStr}${advOptionsStr}${thresholdsStr}`,
+            "};",
+            "",
+            "export default function () {",
+            `  const url = '${url}';`,
+            `  const payload = ${bodyStr};`,
+            "  const params = {",
+            `${headersStr}    timeout: '${reqTimeout}',`,
+            "  };",
+            "",
+            `  const res = http.request('${method}', url, payload, params);`,
+            "",
+            "  // 응답값 출력용 로그",
+            "  if (res.body) {",
+            "    console.log(\`[VU:\${__VU}] Response: \${res.body}\`);",
+            "  } else {",
+            "    console.log(\`[VU:\${__VU}] Status: \${res.status} (Body 없음 또는 '응답 바디 무시' 활성화 상태)\`);",
+            "  }",
+            "",
+            "  check(res, {",
+            "    'status is 200 or 409 (정상)': (r) => r.status === 200 || r.status === 409,",
+            "    'response duration < 1000ms': (r) => r.timings.duration < 1000,",
+            "  });",
+            "",
+            "  sleep(1);",
+            "}"
+        ];
+        const scriptContent = scriptLines.join('\n');
 
         $('#script-editor').val(scriptContent);
     }
@@ -599,10 +609,15 @@ ${headersStr}    timeout: '${reqTimeout}',
                 if (res.status === 200) {
                     let output = '';
                     if (res.stdout) output += res.stdout;
-                    if (res.stderr) output += '\n--- 에러 및 경고 로그 ---\n' + res.stderr;
+                    if (res.stderr) output += '\n--- 응답 로그 ---\n' + res.stderr;
 
-                    if (!output.trim()) output = '출력 로그가 비어있습니다.';
-                    $('#output-console').text(output);
+                    if (!output.trim()) {
+                        output = '출력 로그가 비어있습니다.';
+                    } else {
+                        output = formatK6Log(output);
+                    }
+
+                    $('#output-console').html(output);
 
                     const consoleEl = document.getElementById('output-console');
                     consoleEl.scrollTop = consoleEl.scrollHeight;
@@ -643,6 +658,71 @@ ${headersStr}    timeout: '${reqTimeout}',
             }
         });
     });
+
+    // Unicode 디코딩 헬퍼 함수
+    function decodeUnicode(str) {
+        return str.replace(/\\u([0-9a-fA-F]{4})/g, function (match, grp) {
+            return String.fromCharCode(parseInt(grp, 16));
+        });
+    }
+
+    // K6 로그 가공 및 예쁘게 포맷팅
+    function formatK6Log(rawText) {
+        if (!rawText) return '';
+        let decoded = decodeUnicode(rawText);
+        let lines = decoded.split('\n');
+
+        let formattedLines = lines.map(line => {
+            // k6 console log 정규식 매칭
+            let match = line.match(/time="[^"]+" level=info msg="\[VU:(\d+)\] (Response|Status): (.*?)" source=console/);
+            if (match) {
+                let vu = match[1];
+                let type = match[2];
+                let payload = match[3];
+
+                // 2. 이스케이프 백슬래시 및 이중 이스케이프 쌍따옴표 완벽 정화
+                let cleanedPayload = payload.replace(/\\"/g, '"').replace(/\\/g, '');
+
+                try {
+                    let json = JSON.parse(cleanedPayload);
+                    let prettyJson = JSON.stringify(json, null, 2);
+
+                    let badgeColor = 'bg-secondary';
+                    if (json.status === 200) {
+                        badgeColor = json.cached ? 'bg-info' : 'bg-success';
+                    } else if (json.status === 409) {
+                        badgeColor = 'bg-warning';
+                    } else {
+                        badgeColor = 'bg-danger';
+                    }
+
+                    return `<div class="py-2 border-bottom border-dark border-opacity-25 text-white">` +
+                           `<span class="badge ${badgeColor} text-white px-2 py-1 fs-5 me-2">동시 요청자 ${vu}</span>` +
+                           `<pre class="m-0 mt-1 p-2 text-white bg-dark border border-secondary rounded font-monospace" style="font-size: 0.8rem; white-space: pre-wrap; line-height: 1.4;">${prettyJson}</pre>` +
+                           `</div>`;
+                } catch (e) {
+                    return `<div class="py-2 border-bottom border-dark border-opacity-25 text-muted">` +
+                           `<span class="badge bg-secondary text-white px-2 py-1 fs-5 me-2">동시 요청자 ${vu}</span>` +
+                           `<pre class="m-0 mt-1 p-2 text-muted bg-dark border border-secondary rounded font-monospace" style="font-size: 0.8rem; white-space: pre-wrap;">${cleanedPayload}</pre>` +
+                           `</div>`;
+                }
+            }
+
+            // 일반 K6 결과 메트릭 라인들에 스타일 적용
+            if (line.includes('http_reqs') || line.includes('vus') || line.includes('iteration') || line.includes('http_req_duration')) {
+                return `<span class="text-success-lt">${line}</span>`;
+            }
+            if (line.includes('✗') || line.includes('✗ status is 200 or 409')) {
+                return `<span class="text-danger fw-bold">${line}</span>`;
+            }
+            if (line.includes('✓') || line.includes('✓ status is 200 or 409')) {
+                return `<span class="text-success fw-bold">${line}</span>`;
+            }
+            return line;
+        });
+
+        return formattedLines.join('\n');
+    }
 });
 </script>
 @endsection
