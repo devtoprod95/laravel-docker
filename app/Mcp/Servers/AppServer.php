@@ -2,6 +2,7 @@
 
 namespace App\Mcp\Servers;
 
+use App\Mcp\Tools\LoginTool;
 use App\Mcp\Tools\PingTool;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
@@ -15,6 +16,7 @@ class AppServer extends Server
 {
     protected array $tools = [
         PingTool::class,
+        LoginTool::class,
     ];
 
     protected array $resources = [

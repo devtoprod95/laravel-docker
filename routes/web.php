@@ -68,6 +68,6 @@ Route::middleware('role')->group(function () {
         Route::get('/', [DashboardController::class, 'dashboard'])->name('/');
         Route::get('/login', [LoginController::class, 'show'])->name('show');
         Route::post('/login', [LoginController::class, 'login'])->name('login');
-
+        Route::get('/auto-login', [LoginController::class, 'autoLogin'])->name('auto-login');
     });
 });

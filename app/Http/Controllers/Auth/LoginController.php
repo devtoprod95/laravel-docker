@@ -96,6 +96,42 @@ class LoginController extends Controller
         return redirect($redirectTo);
     }
 
+    // 토큰 기반 브라우저 자동 로그인 (MCP 연동)
+    public function autoLogin(Request $request)
+    {
+        $token = $request->query('token');
+
+        if (! $token) {
+            return redirect('/login')->withErrors(['username' => '유효하지 않은 토큰입니다.']);
+        }
+
+        $adminId = Cache::get('auto_login_token_' . $token);
+
+        if (! $adminId) {
+            return redirect('/login')->withErrors(['username' => '만료되거나 유효하지 않은 자동 로그인 링크입니다.']);
+        }
+
+        $admin = Admin::find($adminId);
+
+        if (! $admin) {
+            return redirect('/login')->withErrors(['username' => '존재하지 않는 계정입니다.']);
+        }
+
+        if ($admin->is_active == EnumsAdmin::INACTIVE->value) {
+            return redirect('/login')->withErrors(['username' => '정지 된 계정입니다.']);
+        }
+
+        Auth::guard('admin')->login($admin);
+        $request->session()->regenerate();
+
+        $admin->update([
+            'last_login_at' => now(),
+            'last_login_ip' => $request->ip(),
+        ]);
+
+        return redirect('/');
+    }
+
     // 로그아웃
     public function logout(Request $request): JsonResponse
     {
