@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "baseplate": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "baseplate-php",
+        "php",
+        "/var/www/html/artisan",
+        "mcp:start",
+        "app",
+        "--no-interaction"
+      ]
+    }
+  }
+}
