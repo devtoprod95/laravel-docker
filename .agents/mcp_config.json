@@ -12,6 +12,17 @@
         "app",
         "--no-interaction"
       ]
+    },
+    "laravel-boost": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "baseplate-php",
+        "php",
+        "/var/www/html/artisan",
+        "boost:mcp"
+      ]
     }
   }
 }
