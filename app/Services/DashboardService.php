@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\CacheKey;
 use App\Enums\HttpStatus;
+use App\Models\SiteStatistic;
 use App\Models\VisitorLog;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -69,7 +70,7 @@ class DashboardService
     private function fetchFromDb(): array
     {
         return [
-            'total_visitors'     => VisitorLog::count(),
+            'total_visitors'     => SiteStatistic::sum('total_visitors'),
             'today_visitors'     => VisitorLog::today()->count(),
             'yesterday_visitors' => VisitorLog::yesterday()->count(),
         ];
