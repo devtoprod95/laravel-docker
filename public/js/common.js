@@ -1,3 +1,47 @@
+// Tabulator 포커스 시 브라우저 강제 스크롤(화면 점프) 방지 패치
+(function() {
+    const originalFocus = HTMLElement.prototype.focus;
+    HTMLElement.prototype.focus = function(options) {
+        if (this.classList && (this.classList.contains('tabulator') || this.closest('.tabulator'))) {
+            options = options || {};
+            options.preventScroll = true;
+        }
+        originalFocus.call(this, options);
+    };
+})();
+
+$(document).ready(function() {
+    const Tooltip = window.bootstrap?.Tooltip || window.tabler?.bootstrap?.Tooltip;
+
+    if (!Tooltip) {
+        return;
+    }
+
+    // 초기 렌더된 tooltip 요소 활성화
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function(el) {
+        Tooltip.getOrCreateInstance(el);
+    });
+
+    // 동적으로 추가된 요소도 hover/focus 시점에 자동 활성화
+    document.addEventListener('mouseover', function(e) {
+        const target = e.target.closest('[data-bs-toggle="tooltip"]');
+        if (!target) {
+            return;
+        }
+
+        Tooltip.getOrCreateInstance(target);
+    });
+
+    document.addEventListener('focusin', function(e) {
+        const target = e.target.closest('[data-bs-toggle="tooltip"]');
+        if (!target) {
+            return;
+        }
+
+        Tooltip.getOrCreateInstance(target);
+    });
+});
+
 window.salert = async function(options = {}) {
     const result = await Swal.fire({
         title: options.title || '',
@@ -65,6 +109,7 @@ document.addEventListener("DOMContentLoaded", function () {
             ...config,
             onChange: (selectedDates, dateStr) => {
                 if (endPicker) endPicker.set('minDate', dateStr);
+                $(instance.element).trigger('change');
             },
             onReady: function(sd, ds, inst) {
                 addControls(inst, () => startPicker, () => endPicker);
@@ -78,6 +123,7 @@ document.addEventListener("DOMContentLoaded", function () {
             ...config,
             onChange: (selectedDates, dateStr) => {
                 if (startPicker) startPicker.set('maxDate', dateStr);
+                $(instance.element).trigger('change');
             },
             onReady: function(sd, ds, inst) {
                 addControls(inst, () => startPicker, () => endPicker);
@@ -92,6 +138,56 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             if (endInput.value) {
                 startPicker.set('maxDate', endInput.value);
+            }
+        }, 100);
+    }
+
+    const createdDateInput    = document.querySelector('input[name="createdDate"]');
+    const createdDateEndInput = document.querySelector('input[name="createdDateEnd"]');
+
+    let createdDatePicker;
+    let createdDateEndPicker;
+
+    if (createdDateInput && createdDateEndInput && typeof flatpickr !== 'undefined') {
+        const config = {
+            dateFormat: "Y-m-d",
+            locale: "ko",
+            altInput: true,
+            altFormat: "Y년 m월 d일"
+        };
+
+        // 1. 등록일 시작 초기화
+        createdDatePicker = flatpickr(createdDateInput, {
+            ...config,
+            onChange: (selectedDates, dateStr, instance) => {
+                if (createdDateEndPicker) createdDateEndPicker.set('minDate', dateStr);
+                $(instance.element).trigger('change');
+            },
+            onReady: function(sd, ds, inst) {
+                addControls(inst, () => createdDatePicker, () => createdDateEndPicker);
+                if (ds) createdDateEndPicker?.set('minDate', ds);
+            }
+        });
+
+        // 2. 등록일 종료 초기화
+        createdDateEndPicker = flatpickr(createdDateEndInput, {
+            ...config,
+            onChange: (selectedDates, dateStr, instance) => {
+                if (createdDatePicker) createdDatePicker.set('maxDate', dateStr);
+                $(instance.element).trigger('change');
+            },
+            onReady: function(sd, ds, inst) {
+                addControls(inst, () => createdDatePicker, () => createdDateEndPicker);
+                if (ds) createdDatePicker?.set('maxDate', ds);
+            }
+        });
+
+        setTimeout(() => {
+            if (createdDateInput.value) {
+                createdDateEndPicker.set('minDate', createdDateInput.value);
+            }
+            if (createdDateEndInput.value) {
+                createdDatePicker.set('maxDate', createdDateEndInput.value);
             }
         }, 100);
     }

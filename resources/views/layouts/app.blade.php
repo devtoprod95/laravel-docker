@@ -26,11 +26,13 @@
 
     <title>@yield('title', 'Dashboard')</title>
     <link rel="stylesheet" href="{{ asset('css/tabler.min.css') }}">
+    {{-- <link rel="stylesheet" href="{{ asset('css/tabler-icons.min.css') }}"> --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/6.3.0/css/tabulator_bootstrap5.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/flatpickr.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/sweetalert2.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/tabulator_bootstrap5.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/choices.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -78,6 +80,8 @@
                     <script src="https://npmcdn.com/flatpickr/dist/l10n/ko.js"></script>
                     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tabulator/6.3.0/js/tabulator.min.js"></script>
                     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+                    <script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
+                    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 
                     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
                     <script src="{{ asset('js/common.js') }}?v={{ filemtime(public_path('js/common.js')) }}"></script>
